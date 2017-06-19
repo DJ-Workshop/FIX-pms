@@ -1,0 +1,356 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Definition the BIX-pp schema (DTD) by XML schema          -->
+<!-- BIX-pp is Bio-Information eXchange for Plant Production   -->
+<!-- Version 3.0  2005.12.06 Takehiko Hoshi (hoshi@tokai.ac.jp)-->
+
+<!-- Version History -->
+<!-- 2005.12.06 version 3.0 -->
+<!-- * DescriptionItem was added. -->
+<!-- * The XSLT file link wad added to header of BIX-pp file   -->
+<!--   for displaying formatted contents.                      -->
+<!--   example: ?xml-stylesheet type="text/xsl" href="http://  -->
+<!--        w3.fb.u-tokai.ac.jp/BIX-pp/XMLSchema/BIX-pp.xsl"?  -->
+<!-- * Date format of Start tag was changed to "dateTime".     -->
+<!-- * Double format of Index tag was changed to "long".       -->
+<!-- 2005.03.16 version 2.1 -->
+<!-- * In XMLSchema description, choice option in Item tag     -->
+<!--   was changed from sequence to choice minOccurs="0"       -->
+<!--   maxOccurs="unbounded".                                  -->
+<!-- 2004.09.01 version 2.0 -->
+<!-- * Multiple Cultivation tags were allowed.                 -->
+<!-- * VectorItem was added.                                   -->
+<!-- * Some syntax errors in XMLSchema definition were         -->
+<!--   corrected.                                              -->
+<!-- 2003.05.22 version 1.0 -->
+<!-- * BIX-pp was proposed.                                    -->
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+ targetNamespace="http://w3.fb.u-tokai.ac.jp/BIX-pp/XMLSchema"
+ xmlns:bixpp="http://w3.fb.u-tokai.ac.jp/BIX-pp/XMLSchema">
+
+<!-- commonly single elements -->
+
+ <xsd:element name="AcademicName" type="xsd:string"/>
+ <xsd:element name="Altitude" type="xsd:double"/>
+ <xsd:element name="Area" type="xsd:double"/>
+ <xsd:element name="Base64" type="xsd:base64Binary"/>
+ <xsd:element name="Comment" type="xsd:string"/>
+ <xsd:element name="Complete" type="xsd:dateTime"/>
+ <xsd:element name="Create" type="xsd:dateTime"/>
+ <xsd:element name="Cultivar" type="xsd:string"/>
+ <xsd:element name="Days" type="xsd:double"/>
+ <xsd:element name="EmailAddress" type="xsd:string"/>
+ <xsd:element name="Family" type="xsd:string"/>
+ <xsd:element name="FAX" type="xsd:string"/>
+ <xsd:element name="Hex" type="xsd:hexBinary"/>
+ <xsd:element name="ID" type="xsd:string"/>
+ <xsd:element name="Index" type="xsd:long"/>
+ <xsd:element name="Latitude" type="xsd:double"/>
+ <xsd:element name="Longitude" type="xsd:double"/>
+ <xsd:element name="Name" type="xsd:string"/>
+ <xsd:element name="NumberOfDimension" type="xsd:integer"/>
+ <xsd:element name="NumberOfItem" type="xsd:integer"/>
+ <xsd:element name="NumberOfPlant" type="xsd:double"/>
+ <xsd:element name="Origin" type="xsd:string"/>
+ <xsd:element name="Phone" type="xsd:string"/>
+ <xsd:element name="PlantingType" type="xsd:string"/>
+ <xsd:element name="PostAddress" type="xsd:string"/>
+ <xsd:element name="RecordFormat" type="xsd:string"/>
+ <xsd:element name="Set" type="bixpp:listOfDouble"/>
+ <xsd:element name="Start" type="xsd:dateTime"/>
+ <xsd:element name="Unit" type="xsd:string"/>
+ <xsd:element name="Update" type="xsd:dateTime"/>
+ <xsd:element name="URI" type="xsd:anyURI"/>
+ <xsd:element name="Value" type="xsd:double"/>
+ <xsd:element name="Description" type="xsd:string"/>
+ <xsd:element name="Version" type="bixpp:versionNo"/>
+
+<!-- type definition -->
+
+ <xsd:simpleType name="versionNo">
+   <xsd:restriction base="xsd:float">
+     <xsd:minInclusive value="3.0"/>
+     <xsd:maxInclusive value="3.9"/>
+   </xsd:restriction>
+ </xsd:simpleType>
+
+ <xsd:simpleType name="listOfDouble">
+   <xsd:list itemType="xsd:double"/>
+ </xsd:simpleType>
+
+<!-- complex sub elements -->
+
+ <xsd:element name="Link">
+  <xsd:complexType>
+   <xsd:sequence>
+    <xsd:element ref="bixpp:Name" minOccurs="0" maxOccurs="1"/>
+    <xsd:element ref="bixpp:URI"/>
+   </xsd:sequence>
+  </xsd:complexType>
+ </xsd:element>
+
+ <xsd:element name="DimensionalDescription">
+  <xsd:complexType>
+   <xsd:sequence>
+    <xsd:element ref="bixpp:Name"/>
+    <xsd:element ref="bixpp:Unit"/>
+   </xsd:sequence>
+  </xsd:complexType>
+ </xsd:element>
+
+ <xsd:element name="Vector">
+  <xsd:complexType>
+   <xsd:sequence>
+    <xsd:element ref="bixpp:NumberOfItem"/>
+    <xsd:element ref="bixpp:Set" minOccurs="1" maxOccurs="unbounded"/>
+   </xsd:sequence>
+  </xsd:complexType>
+ </xsd:element>
+
+ <xsd:element name="HexHeader">
+  <xsd:complexType>
+   <xsd:sequence>
+    <xsd:element ref="bixpp:Name" minOccurs="0" maxOccurs="1"/>
+    <xsd:element ref="bixpp:RecordFormat"/>
+    <xsd:element ref="bixpp:Hex"/>
+   </xsd:sequence>
+  </xsd:complexType>
+ </xsd:element>
+
+ <xsd:element name="Base64Header">
+  <xsd:complexType>
+   <xsd:sequence>
+    <xsd:element ref="bixpp:Name" minOccurs="0" maxOccurs="1"/>
+    <xsd:element ref="bixpp:RecordFormat"/>
+    <xsd:element ref="bixpp:Base64"/>
+   </xsd:sequence>
+  </xsd:complexType>
+ </xsd:element>
+
+ <xsd:element name="Image">
+  <xsd:complexType>
+   <xsd:choice>
+    <xsd:element ref="bixpp:Link"/>
+    <xsd:element ref="bixpp:HexHeader"/>
+    <xsd:element ref="bixpp:Base64Header"/>
+   </xsd:choice>
+  </xsd:complexType>
+ </xsd:element>
+
+ <xsd:element name="Sound">
+  <xsd:complexType>
+   <xsd:choice>
+    <xsd:element ref="bixpp:Link"/>
+    <xsd:element ref="bixpp:HexHeader"/>
+    <xsd:element ref="bixpp:Base64Header"/>
+   </xsd:choice>
+  </xsd:complexType>
+ </xsd:element>
+
+ <xsd:element name="GISinformation">
+  <xsd:complexType>
+   <xsd:sequence>
+    <xsd:element ref="bixpp:Latitude"/>
+    <xsd:element ref="bixpp:Longitude"/>
+    <xsd:element ref="bixpp:Altitude"/>
+   </xsd:sequence>
+  </xsd:complexType>
+ </xsd:element>
+
+ <xsd:element name="Plant">
+  <xsd:complexType>
+   <xsd:sequence>
+    <xsd:element ref="bixpp:ID" minOccurs="0" maxOccurs="1"/>
+    <xsd:element ref="bixpp:Name"/>
+    <xsd:element ref="bixpp:Family" minOccurs="0" maxOccurs="1"/>
+    <xsd:element ref="bixpp:AcademicName" minOccurs="0" maxOccurs="1"/>
+    <xsd:element ref="bixpp:Cultivar" minOccurs="0" maxOccurs="1"/>
+    <xsd:element ref="bixpp:Origin" minOccurs="0" maxOccurs="1"/>
+    <xsd:element ref="bixpp:Link" minOccurs="0" maxOccurs="1"/>
+    <xsd:element ref="bixpp:Image" minOccurs="0" maxOccurs="1"/>
+    <xsd:element ref="bixpp:Comment" minOccurs="0" maxOccurs="1"/>
+   </xsd:sequence>
+  </xsd:complexType>
+ </xsd:element>
+
+<!-- complex primally elements -->
+
+ <xsd:element name="Producer">
+  <xsd:complexType>
+   <xsd:sequence>
+    <xsd:element ref="bixpp:ID" minOccurs="0" maxOccurs="1"/>
+    <xsd:element ref="bixpp:Name"/>
+    <xsd:element ref="bixpp:PostAddress"/>
+    <xsd:element ref="bixpp:Phone"/>
+    <xsd:element ref="bixpp:FAX" minOccurs="0" maxOccurs="1"/>
+    <xsd:element ref="bixpp:EmailAddress" minOccurs="0" maxOccurs="1"/>
+    <xsd:element ref="bixpp:Link" minOccurs="0" maxOccurs="1"/>
+    <xsd:element ref="bixpp:GISinformation" minOccurs="0" maxOccurs="1"/>
+    <xsd:element ref="bixpp:Image" minOccurs="0" maxOccurs="1"/>
+    <xsd:element ref="bixpp:Sound" minOccurs="0" maxOccurs="1"/>
+    <xsd:element ref="bixpp:Comment" minOccurs="0" maxOccurs="1"/>
+   </xsd:sequence>
+  </xsd:complexType>
+ </xsd:element>
+
+ <xsd:element name="Farm">
+  <xsd:complexType>
+   <xsd:sequence>
+    <xsd:element ref="bixpp:ID" minOccurs="0" maxOccurs="1"/>
+    <xsd:element ref="bixpp:Name"/>
+    <xsd:element ref="bixpp:PostAddress"/>
+    <xsd:element ref="bixpp:Phone"/>
+    <xsd:element ref="bixpp:Area"/>
+    <xsd:element ref="bixpp:FAX" minOccurs="0" maxOccurs="1"/>
+    <xsd:element ref="bixpp:EmailAddress" minOccurs="0" maxOccurs="1"/>
+    <xsd:element ref="bixpp:Link" minOccurs="0" maxOccurs="1"/>
+    <xsd:element ref="bixpp:GISinformation" minOccurs="0" maxOccurs="1"/>
+    <xsd:element ref="bixpp:Image" minOccurs="0" maxOccurs="1"/>
+    <xsd:element ref="bixpp:Comment" minOccurs="0" maxOccurs="1"/>
+   </xsd:sequence>
+  </xsd:complexType>
+ </xsd:element>
+
+ <xsd:element name="Cultivation">
+  <xsd:complexType>
+   <xsd:sequence>
+    <xsd:element ref="bixpp:ID" minOccurs="0" maxOccurs="1"/>
+    <xsd:element ref="bixpp:Plant"/>
+    <xsd:element ref="bixpp:NumberOfPlant"/>
+    <xsd:element ref="bixpp:PlantingType"/>
+    <xsd:element ref="bixpp:Link" minOccurs="0" maxOccurs="1"/>
+    <xsd:element ref="bixpp:Image" minOccurs="0" maxOccurs="1"/>
+    <xsd:element ref="bixpp:Comment" minOccurs="0" maxOccurs="1"/>
+   </xsd:sequence>
+  </xsd:complexType>
+ </xsd:element>
+
+ <xsd:element name="DataItem">
+  <xsd:complexType>
+   <xsd:sequence>
+    <xsd:element ref="bixpp:Index"/>
+    <xsd:element ref="bixpp:Name"/>
+    <xsd:element ref="bixpp:Unit"/>
+    <xsd:element ref="bixpp:Comment" minOccurs="0" maxOccurs="1"/>
+   </xsd:sequence>
+  </xsd:complexType>
+ </xsd:element>
+
+ <xsd:element name="VectorItem">
+  <xsd:complexType>
+   <xsd:sequence>
+    <xsd:element ref="bixpp:Index"/>
+    <xsd:element ref="bixpp:Name"/>
+    <xsd:element ref="bixpp:NumberOfDimension"/>
+    <xsd:element ref="bixpp:DimensionalDescription" minOccurs="1" maxOccurs="unbounded"/>
+    <xsd:element ref="bixpp:Comment" minOccurs="0" maxOccurs="1"/>
+   </xsd:sequence>
+  </xsd:complexType>
+ </xsd:element>
+
+ <xsd:element name="ImageItem">
+  <xsd:complexType>
+   <xsd:sequence>
+    <xsd:element ref="bixpp:Index"/>
+    <xsd:element ref="bixpp:Name"/>
+    <xsd:element ref="bixpp:Comment" minOccurs="0" maxOccurs="1"/>
+   </xsd:sequence>
+  </xsd:complexType>
+ </xsd:element>
+
+ <xsd:element name="SoundItem">
+  <xsd:complexType>
+   <xsd:sequence>
+    <xsd:element ref="bixpp:Index"/>
+    <xsd:element ref="bixpp:Name"/>
+    <xsd:element ref="bixpp:Comment" minOccurs="0" maxOccurs="1"/>
+   </xsd:sequence>
+  </xsd:complexType>
+ </xsd:element>
+
+ <xsd:element name="EventItem">
+  <xsd:complexType>
+   <xsd:sequence>
+    <xsd:element ref="bixpp:Index"/>
+    <xsd:element ref="bixpp:Name"/>
+    <xsd:element ref="bixpp:Comment" minOccurs="0" maxOccurs="1"/>
+   </xsd:sequence>
+  </xsd:complexType>
+ </xsd:element>
+ 
+  <xsd:element name="DescriptionItem">
+  <xsd:complexType>
+   <xsd:sequence>
+    <xsd:element ref="bixpp:Index"/>
+    <xsd:element ref="bixpp:Name"/>
+    <xsd:element ref="bixpp:Comment" minOccurs="0" maxOccurs="1"/>
+   </xsd:sequence>
+  </xsd:complexType>
+ </xsd:element>
+
+ <xsd:element name="RecordingDefinition">
+  <xsd:complexType>
+   <xsd:choice minOccurs="0" maxOccurs="unbounded">
+    <xsd:element ref="bixpp:DataItem"/>
+    <xsd:element ref="bixpp:VectorItem"/>
+    <xsd:element ref="bixpp:ImageItem"/>
+    <xsd:element ref="bixpp:SoundItem"/>
+    <xsd:element ref="bixpp:EventItem"/>
+    <xsd:element ref="bixpp:DescriptionItem"/>
+   </xsd:choice>
+  </xsd:complexType>
+ </xsd:element>
+
+ <xsd:element name="Item">
+  <xsd:complexType>
+   <xsd:sequence>
+    <xsd:element ref="bixpp:Index"/>
+    <xsd:choice minOccurs="0" maxOccurs="1">
+     <xsd:element ref="bixpp:Value"/>
+     <xsd:element ref="bixpp:Vector"/>
+     <xsd:element ref="bixpp:Image"/>
+     <xsd:element ref="bixpp:Sound"/>
+     <xsd:element ref="bixpp:Description"/>
+    </xsd:choice>
+   </xsd:sequence>
+  </xsd:complexType>
+ </xsd:element>
+
+ <xsd:element name="Record">
+  <xsd:complexType>
+   <xsd:sequence>
+    <xsd:element ref="bixpp:Days"/>
+    <xsd:element ref="bixpp:Item" minOccurs="0" maxOccurs="unbounded"/>
+   </xsd:sequence>
+  </xsd:complexType>
+ </xsd:element>
+
+ <xsd:element name="RecordSet">
+  <xsd:complexType>
+   <xsd:sequence>
+    <xsd:element ref="bixpp:Record" minOccurs="1" maxOccurs="unbounded"/>
+   </xsd:sequence>
+  </xsd:complexType>
+ </xsd:element>
+
+<!-- root object -->
+
+ <xsd:element name="BIX-pp">
+  <xsd:complexType>
+   <xsd:sequence>
+    <xsd:element ref="bixpp:Version"/>
+    <xsd:element ref="bixpp:Create"/>
+    <xsd:element ref="bixpp:Update"/>
+    <xsd:element ref="bixpp:Complete" minOccurs="0" maxOccurs="1"/>
+    <xsd:element ref="bixpp:Producer"/>
+    <xsd:element ref="bixpp:Farm"/>
+    <xsd:element ref="bixpp:Cultivation" minOccurs="1" maxOccurs="unbounded"/>
+    <xsd:element ref="bixpp:Start"/>
+    <xsd:element ref="bixpp:RecordingDefinition" minOccurs="0" maxOccurs="1"/>
+    <xsd:element ref="bixpp:RecordSet" minOccurs="0" maxOccurs="1"/>
+   </xsd:sequence>
+  </xsd:complexType>
+ </xsd:element>
+
+</xsd:schema>

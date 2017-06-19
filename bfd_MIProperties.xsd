@@ -1,0 +1,182 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            attributeFormDefault="unqualified"
+            elementFormDefault="qualified"
+            finalDefault="#all"
+            blockDefault="#all"
+            targetNamespace="http://naro.narc.fmd.go.jp/bfd/MIProperty"
+            xmlns:bfdmip="http://naro.narc.fmd.go.jp/bfd/MIProperty"
+            xmlns:bfdel="http://naro.narc.fmd.go.jp/bfd/Element"
+            xmlns:bfdtr="http://naro.narc.fmd.go.jp/bfd/TypeRestriction"
+            >
+
+  <!--外部スキーマの取り込み-->
+  <xsd:import namespace="http://naro.narc.fmd.go.jp/bfd/Element" schemaLocation="bfd_Element.xsd" />
+  <xsd:import namespace="http://naro.narc.fmd.go.jp/bfd/TypeRestriction" schemaLocation="bfd_Type.xsd" />
+
+  <!--スキーマ情報-->
+  <xsd:annotation>
+    <xsd:appinfo>
+      Scheme Version 1.00
+    </xsd:appinfo>
+    <xsd:documentation>
+      経営指標項目「属性」群用のXMLスキーマ
+    </xsd:documentation>
+  </xsd:annotation>
+
+  <!--経営指標項目「属性」群のルート要素宣言-->
+  <xsd:element name="MIPropertys">
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element ref="bfdmip:MIProperty" minOccurs="1" maxOccurs="unbounded" />
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+
+  <!--経営指標項目「属性」の要素宣言-->
+  <xsd:element name="MIProperty">
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element ref="bfdel:MIndexID" minOccurs="0" maxOccurs="1">
+          <xsd:annotation>
+            <xsd:documentation>
+              経営指標要素を参照するための外部キー
+              共通要素スキーマから参照
+            </xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+        <!--経営指標項目「属性」のサブ要素のモデルグループ参照-->
+        <xsd:group ref="bfdmip:GroupMIProperty" minOccurs="1" maxOccurs="1" />
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+
+  <!--経営指標項目「属性」のサブ要素のモデルグループ-->
+  <xsd:group name="GroupMIProperty">
+    <xsd:annotation>
+      <xsd:documentation>
+        MIndeices.xsdへはこれを読み込む？
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <!--経営指標項目「属性」のサブ要素の参照-->
+      <xsd:group ref="bfdmip:GroupMIndexName" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="bfdmip:IsFoodRice" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="bfdmip:CroppingTendaysStart" minOccurs="1" maxOccurs="1" />
+      <xsd:group ref="bfdmip:GroupUsedLandTendays" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="bfdmip:MIndexMemo" minOccurs="1" maxOccurs="1" />
+    </xsd:sequence>
+  </xsd:group>
+
+  <!--経営指標項目名のモデルグループ-->
+  <xsd:group name="GroupMIndexName">
+    <xsd:annotation>
+      <xsd:documentation>
+        経営指標項目名
+        RegionNaem_CropName_CroppinType_BreedName_CroppingSize_LandCategory
+        重複なし
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element ref="bfdmip:RegionName" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="bfdmip:CropName" minOccurs="1" maxOccurs="1"       />
+      <xsd:element ref="bfdmip:CroppingType" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="bfdmip:BreedName" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="bfdmip:CroppingSize" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="bfdmip:LandCategory" minOccurs="1" maxOccurs="1" />
+    </xsd:sequence>
+  </xsd:group>
+
+  <!--圃場利用の旬日期間のモデルグループ-->
+  <xsd:group name="GroupUsedLandTendays">
+    <xsd:sequence>
+      <xsd:element ref="bfdmip:UsedLandTendaysStart" />
+      <xsd:element ref="bfdmip:UsedLandTendaysEnd" />
+    </xsd:sequence>
+  </xsd:group>
+
+  <!--基本属性のサブ項目の要素宣言-->
+  <xsd:element name="RegionName" type="xsd:string" nillable="true">
+    <xsd:annotation>
+      <xsd:documentation>
+        経営指標要素の地域（例；都道府県名）
+      </xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="CropName" type="xsd:string">
+    <xsd:annotation>
+      <xsd:documentation>
+        経営指標要素の作目名
+      </xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="CroppingType" type="xsd:string">
+    <xsd:annotation>
+      <xsd:documentation>
+        経営指標要素の作型
+      </xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="BreedName" type="xsd:string" nillable="true">
+    <xsd:annotation>
+      <xsd:documentation>
+        経営指標要素の品種名
+      </xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="CroppingSize" type="xsd:string" nillable="true">
+    <xsd:annotation>
+      <xsd:documentation>
+        経営指標要素の対象規模
+      </xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="MIndexMemo" type="xsd:string" nillable="true">
+    <xsd:annotation>
+      <xsd:documentation>
+        経営指標要素の備考
+      </xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+
+  <!--土地利用属性のサブ項目の要素宣言-->
+  <xsd:element name="LandCategory" type="bfdtr:TypeLandCategory">
+    <xsd:annotation>
+      <xsd:documentation>
+        地目等、LandCategoryのXMLファイルを参照する外部キー
+      </xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="IsFoodRice" type="xsd:boolean" default="0">
+    <xsd:annotation>
+      <xsd:documentation>
+        主食用米の有無
+      </xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="CroppingTendaysStart" type="bfdtr:TypeTendays" default="1.1">
+    <xsd:annotation>
+      <xsd:documentation>
+        作付の開始旬、初期値1.1
+        TendaysのXMLファイルを参照する外部キー
+      </xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="UsedLandTendaysStart" type="bfdtr:TypeTendays" default="1.1">
+    <xsd:annotation>
+      <xsd:documentation>
+        圃場利用の開始旬、初期値1.1
+        TendaysのXMLファイルを参照する外部キー
+      </xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="UsedLandTendaysEnd" type="bfdtr:TypeTendays" default="12.3">
+    <xsd:annotation>
+      <xsd:documentation>
+        圃場利用の修了旬、初期値12.3
+        TendaysのXMLファイルを参照する外部キー
+      </xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+
+</xsd:schema>

@@ -1,0 +1,94 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            attributeFormDefault="unqualified"
+            elementFormDefault="qualified"
+            finalDefault="#all"
+            blockDefault="#all"
+            targetNamespace="http://naro.narc.fmd.go.jp/bfd/TypeRestriction"
+            xmlns:bfdtr="http://naro.narc.fmd.go.jp/bfd/TypeRestriction"
+            >
+
+  <!--スキーマ情報-->
+  <xsd:annotation>
+    <xsd:appinfo>
+      Scheme Version 1.00
+    </xsd:appinfo>
+    <xsd:documentation>
+      地目等の単純型用のXMLスキーマ
+      UsedLand.xsd内のLandCategoryの取得値を制限する
+    </xsd:documentation>
+  </xsd:annotation>
+
+  <!--地目等の単純型-->
+  <xsd:simpleType name="TypeLandCategory">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="田" />
+      <xsd:enumeration value="畑" />
+      <xsd:enumeration value="樹園地" />
+      <xsd:enumeration value="ハウス等" />
+      <xsd:enumeration value="その他の地目等" />
+    </xsd:restriction>
+  </xsd:simpleType>
+
+  <!--月旬の単純型-->
+  <xsd:simpleType name="TypeTendays">
+    <xsd:restriction base="xsd:decimal">
+      <xsd:enumeration value="1.1" />
+      <xsd:enumeration value="1.2" />
+      <xsd:enumeration value="1.3" />
+      <xsd:enumeration value="2.1" />
+      <xsd:enumeration value="2.2" />
+      <xsd:enumeration value="2.3" />
+      <xsd:enumeration value="3.1" />
+      <xsd:enumeration value="3.2" />
+      <xsd:enumeration value="3.3" />
+      <xsd:enumeration value="4.1" />
+      <xsd:enumeration value="4.2" />
+      <xsd:enumeration value="4.3" />
+      <xsd:enumeration value="5.1" />
+      <xsd:enumeration value="5.2" />
+      <xsd:enumeration value="5.3" />
+      <xsd:enumeration value="6.1" />
+      <xsd:enumeration value="6.2" />
+      <xsd:enumeration value="6.3" />
+      <xsd:enumeration value="7.1" />
+      <xsd:enumeration value="7.2" />
+      <xsd:enumeration value="7.3" />
+      <xsd:enumeration value="8.1" />
+      <xsd:enumeration value="8.2" />
+      <xsd:enumeration value="8.3" />
+      <xsd:enumeration value="9.1" />
+      <xsd:enumeration value="9.2" />
+      <xsd:enumeration value="9.3" />
+      <xsd:enumeration value="10.1" />
+      <xsd:enumeration value="10.2" />
+      <xsd:enumeration value="10.3" />
+      <xsd:enumeration value="11.1" />
+      <xsd:enumeration value="11.2" />
+      <xsd:enumeration value="11.3" />
+      <xsd:enumeration value="12.1" />
+      <xsd:enumeration value="12.2" />
+      <xsd:enumeration value="12.3" />
+    </xsd:restriction>
+  </xsd:simpleType>
+
+  <!--変動費の集計費目の単純型-->
+  <xsd:simpleType name="TypeVCostItem">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="種苗費" />
+      <xsd:enumeration value="種付料" />
+      <xsd:enumeration value="もと畜費" />
+      <xsd:enumeration value="肥料費" />
+      <xsd:enumeration value="飼料費" />
+      <xsd:enumeration value="敷料費" />
+      <xsd:enumeration value="農薬衛生費" />
+      <xsd:enumeration value="光熱動力費" />
+      <xsd:enumeration value="その他の諸材料費" />
+      <xsd:enumeration value="獣医師料・医薬品費" />
+      <xsd:enumeration value="土地改良・水利費" />
+      <xsd:enumeration value="賃借料・料金" />
+      <xsd:enumeration value="荷造運賃手数料" />
+      <xsd:enumeration value="その他の変動費" />
+    </xsd:restriction>
+  </xsd:simpleType>
+</xsd:schema>

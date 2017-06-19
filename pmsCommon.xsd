@@ -1,0 +1,2804 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+  FIX-pms スキーマ
+  【共通データ】
+	Version 1.0.0.0 on 13-Jul-2011 by D.J.
+	Version 1.0.1.0 on 25-May-2012 by D.J.	userDataType typeStringType(SimpleType)にタイプ文字（Enumueration）追加：'M'（動画），'A'（音）
+	Version 1.0.1.1 on 04-Jul-2012 by D.J.	RecDate要素を日付型から日時型に変更（記録時刻もキーとするように仕様変更：日単位→秒単位の記録対応）
+	Version 1.0.1.2 on 04-Dec-2012 by D.J.	ACL(access control list)型追加 → 要素のアクセス権限指定に対応
+  Version 1.0.2.0 on 13-Jan-2014 by D.J.  GUID, Yield10a, WorkDateEnd要素，単位既定値など追加　型定義整理（冗長定義削除）
+  Version 1.0.2.1 on 25-Aug-2014 by D.J.  MowerID, IrrigaterIDなどの追加
+  Version 1.0.2.2 on 28-Aug-2014 by D.J.  yieldPerArea型修正：面積単位が抜けていたのを修正
+  Version 1.0.2.3 on 29-Aug-2014 by D.J.  作型関連要素追加
+  Version 1.0.4.0 on 09-May-2015 by D.J.  コード型定義追加：コード自体の体系メタ情報を記載できるように型・要素定義追加→数値・文字コード定義変更，成分単位型追加→肥料成分定義変更
+	Version 1.0.4.1 on 08-Jun-2015 by D.J.	文字コード型単独要素追加 <FarmerCode>, <OwnerCode>, ....
+  ======================================
+  Version 1.1.0.0 on 29-Dec-2015 by D.J.　・・・　技術体系DBインタフェイス，一次加工流通出荷インタフェイス，NARC経営指標インタフェイス対応
+  Version 1.1.1.0 on 17-Jan-2016 by D.J.  ・・・　技術体系DBインタフェイス調整に伴うスキーマ仕様更新
+-->
+
+<xs:schema targetNamespace="http://www.aginfo.jp/PMS/FIX-pms/XMLSchema"
+    elementFormDefault="qualified"
+    xmlns="http://www.aginfo.jp/PMS/FIX-pms/XMLSchema"
+    xmlns:fp="http://www.aginfo.jp/PMS/FIX-pms/XMLSchema"
+    xmlns:gml="http://www.opengis.net/gml"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+>
+
+  <!--外部参照-->
+  <xs:import namespace="http://www.opengis.net/gml" schemaLocation="Gml.xsd"/>
+
+  <!--ACL型-->
+  <xs:simpleType name="aclStringType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">アクセス権情報型（単純型）を定義しています。</xs:documentation>
+      <xs:documentation xml:lang="en">Defines the type of access control designator and restricts the type value as following list.</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:normalizedString">
+      <xs:enumeration value="Owner">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">アクセス権として「所有者」が必要であることを示します。</xs:documentation>
+          <xs:documentation xml:lang="en">Requires 'Owner' authority(membership).</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="Group">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">アクセス権として「グループ・仲間」が必要であることを示します。</xs:documentation>
+          <xs:documentation xml:lang="en">Requires 'Group' authority(membership).</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="Friend">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">アクセス権として「友人・関係者」が必要であることを示します。</xs:documentation>
+          <xs:documentation xml:lang="en">Requires 'Friend' authority(membership).</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="Public">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">アクセス権として「公開・制限なし」であることを示します。</xs:documentation>
+          <xs:documentation xml:lang="en">Requires 'Public'(others) authority(membership/right), that means no control.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!--コード体系記述-->
+  <xs:simpleType name="codeType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">コード体系の種別を規定します</xs:documentation>
+      <xs:documentation xml:lang="en">Defines the type of code with restriction as following list.</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:normalizedString">
+      <xs:enumeration value="undefined">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">未定義のコード体系であることを示す。</xs:documentation>
+          <xs:documentation xml:lang="en">Indicates the code system is undefined.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="private">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">独自定義のコード体系であることを示す。</xs:documentation>
+          <xs:documentation xml:lang="en">Indicates the code system is defined privately.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="group">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">特定関心領域・関係者間で定義されたコード体系であることを示します。</xs:documentation>
+          <xs:documentation xml:lang="en">Indicates the code system is defined in certain group.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="public">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">一般に公開されたコード体系であることを示します。</xs:documentation>
+          <xs:documentation xml:lang="en">Indicated the code system is defined as a open system.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="codeTypeID">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">コート体系のIDを規定します</xs:documentation>
+      <xs:documentation xml:lang="ja">将来的には利用可能な体系IDを列挙する予定ですが，当面は正整数にとどめています</xs:documentation>
+      <xs:documentation xml:lang="en">Defines numeric ID of code system.</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:nonNegativeInteger" />
+  </xs:simpleType>
+
+  <xs:simpleType name="codeTypeName">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">コート体系の名称を規定します</xs:documentation>
+      <xs:documentation xml:lang="ja">将来的には利用可能な体系名を列挙する予定ですが，当面は文字列型にとどめています</xs:documentation>
+      <xs:documentation xml:lang="en">Is name/title of code system.</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:normalizedString">
+      <xs:maxLength value="30" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- 単位文字列型 -->
+  <xs:simpleType name="unitStringType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">単位文字列型を10文字以内として規定しています。</xs:documentation>
+      <xs:documentation xml:lang="en">Defines the expression of unit of measure with at most 10 characters.</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:normalizedString">
+      <xs:maxLength value="10"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- 時間単位文字列型 -->
+  <xs:simpleType name="timeUnitType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">使用可能な時間単位文字列を列挙して規定しています。</xs:documentation>
+      <xs:documentation xml:lang="en">Defines the unit string of time domain with enumerative list.</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="unitStringType">
+      <xs:enumeration value="sec">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">秒単位の英語表記</xs:documentation>
+          <xs:documentation xml:lang="en">English expression of unit of seconds.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="s">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">秒単位の英語表記</xs:documentation>
+          <xs:documentation xml:lang="en">English expression of unit of second.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="秒">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">秒単位の日本語表記</xs:documentation>
+          <xs:documentation xml:lang="en">Japanese expression of unit of second.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="min">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">分単位の英語表記</xs:documentation>
+          <xs:documentation xml:lang="en">English expression of unit of minute.</xs:documentation>
+          <xs:documentation xml:lang="en">Duration time is stored in unit of minute by PMS.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="分">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">分単位の日本語表記</xs:documentation>
+          <xs:documentation xml:lang="ja">PMSでは所要時間の管理単位は分（minute）です</xs:documentation>
+          <xs:documentation xml:lang="en">Japanese expression of unit of minute.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="h">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">時単位の英語表記</xs:documentation>
+          <xs:documentation xml:lang="en">English expression of unit of hour.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="hour">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">時単位の英語表記</xs:documentation>
+          <xs:documentation xml:lang="en">English expression of unit of hour.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="時">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">時単位の日本語表記</xs:documentation>
+          <xs:documentation xml:lang="en">Japanese expression of unit of hour.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="day">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">日単位の英語表記</xs:documentation>
+          <xs:documentation xml:lang="en">English expression of unit of day.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="日">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">日単位の日本語表記</xs:documentation>
+          <xs:documentation xml:lang="en">Japanese expression of unit of day.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="5days">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">半旬単位の英語表記</xs:documentation>
+          <xs:documentation xml:lang="en">English expression of unit of 5 days.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="半旬">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">半旬単位の日本語表記</xs:documentation>
+          <xs:documentation xml:lang="en">Japanese expression of unit of 5 days.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="10days">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">旬単位の英語表記</xs:documentation>
+          <xs:documentation xml:lang="en">English expression of unit of 10 days.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="旬">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">旬単位の日本語表記</xs:documentation>
+          <xs:documentation xml:lang="en">Japanese expression of unit of 10 days.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="month">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">月単位の英語表記</xs:documentation>
+          <xs:documentation xml:lang="en">English expression of unit of month.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="月">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">月単位の日本語表記</xs:documentation>
+          <xs:documentation xml:lang="en">Japanese expression of unit of month.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="year">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">年単位の英語表記</xs:documentation>
+          <xs:documentation xml:lang="en">English expression of unit of year.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="年">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">年単位の日本語表記</xs:documentation>
+          <xs:documentation xml:lang="en">Japanese expression of unit of year.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- 面積単位文字列型 -->
+  <xs:simpleType name="areaUnitType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">使用可能な面積単位文字列を列挙して規定しています。</xs:documentation>
+      <xs:documentation xml:lang="en">Defines the unit string of area value with enumerative list.</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="unitStringType">
+      <xs:enumeration value="m2">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">面積単位表記：平方メートル</xs:documentation>
+          <xs:documentation xml:lang="en">Aerial unit expression of square meter.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="a">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">面積単位表記：アール</xs:documentation>
+          <xs:documentation xml:lang="en">Aerial unit expression of are.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="10a">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">面積単位表記：10アール（反）</xs:documentation>
+          <xs:documentation xml:lang="en">Aerial unit expression of 10 ares.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="ha">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">面積単位表記：ヘクタール</xs:documentation>
+          <xs:documentation xml:lang="en">Aerial unit expression of hectare.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="km2">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">面積単位表記：平方キロメートル</xs:documentation>
+          <xs:documentation xml:lang="en">Aerial unit expression of square kilometer.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- 重量単位文字列型 -->
+  <xs:simpleType name="weightUnitType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">使用可能な重量単位文字列を列挙して規定しています。</xs:documentation>
+      <xs:documentation xml:lang="en">Defines the unit string of weight value with enumerative list.</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="unitStringType">
+      <xs:enumeration value="mg">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">質量（重量）単位表記：ミリグラム</xs:documentation>
+          <xs:documentation xml:lang="en">Mass weight unit expression of milligram.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="g">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">質量（重量）単位表記：グラム</xs:documentation>
+          <xs:documentation xml:lang="en">Mass weight unit expression of gram.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="kg">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">質量（重量）単位表記：キログラム</xs:documentation>
+          <xs:documentation xml:lang="en">Mass weight unit expression of kilogram.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="t">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">質量（重量）単位表記：トン</xs:documentation>
+          <xs:documentation xml:lang="en">Mass weight unit expression of ton(1000kg).</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- 容量単位文字列型 -->
+  <xs:simpleType name="volumeUnitType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">使用可能な容積・容量単位文字列を列して規定しています。</xs:documentation>
+      <xs:documentation xml:lang="en">Defines the unit string of volume value with enumerative list.</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="unitStringType">
+      <xs:enumeration value="cc">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">容量単位表記：シーシー（1立法センチメートル）</xs:documentation>
+          <xs:documentation xml:lang="en">Mass volume unit expression of cubic centimeter.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="cm3">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">容量単位表記：1立法センチメートル</xs:documentation>
+          <xs:documentation xml:lang="en">Mass volume unit expression of cubic centimeter.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="ml">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">容量単位表記：ミリリットル（1立方センチメートル</xs:documentation>
+          <xs:documentation xml:lang="en">Mass volume unit expression of cubic centimeter.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="mL">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">容量単位表記：ミリリットル（1立方センチメートル）</xs:documentation>
+          <xs:documentation xml:lang="en">Mass volume unit expression of cubic centimeter.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="dl">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">容量単位表記：デシリットル （100立方センチメートル）</xs:documentation>
+          <xs:documentation xml:lang="en">Mass volume unit expression of decilitre(100 cubic centimeter).</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="dL">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">容量単位表記：デシリットル（100立方センチメートル）</xs:documentation>
+          <xs:documentation xml:lang="en">Mass volume unit expression of decilitre(100 cubic centimeter).</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="l">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">容量単位表記：リットル（1000立法センチメートル）</xs:documentation>
+          <xs:documentation xml:lang="en">Mass volume unit expression of litre(1000 cubic centimeter).</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="L">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">容量単位表記：リットル（1000立法センチメートル）</xs:documentation>
+          <xs:documentation xml:lang="en">Mass volume unit expression of litre(1000 cubic centimeter).</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="m3">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">容量単位表記：立方メートル（10^6立法センチメートル）</xs:documentation>
+          <xs:documentation xml:lang="en">Mass volume unit expression of litre(cubic meter / 10^6 cubic centimeter).</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- 汎用(Countable)単位文字列型 -->
+  <xs:simpleType name="countUnitType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">使用可能な計数（カウント）単位文字列を列挙して規定しています。</xs:documentation>
+      <xs:documentation xml:lang="en">Defines the unit string of countable value with enumerative list.</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="unitStringType">
+      <xs:enumeration value="本">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">本数単位</xs:documentation>
+          <xs:documentation xml:lang="en">Japanese unit expression for countable objects like a stick, a bottle, and so on.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="枚">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">枚数単位</xs:documentation>
+          <xs:documentation xml:lang="en">Japanese unit expression for countable objects like a leaf, a paper, and so on.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="粒">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">粒数単位</xs:documentation>
+          <xs:documentation xml:lang="en">Japanese unit expression for countable objects like a particle, a grain, a drop, and so on.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="袋">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">袋数単位</xs:documentation>
+          <xs:documentation xml:lang="en">Japanese unit expression for countable objects like a bag.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="箱">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">箱数単位</xs:documentation>
+          <xs:documentation xml:lang="en">Japanese unit expression for countable objects like a box.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="個">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">個数単位</xs:documentation>
+          <xs:documentation xml:lang="en">Japanese unit expression for countable objects like a piece.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="包">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">包み数単位</xs:documentation>
+          <xs:documentation xml:lang="en">Japanese unit expression for countable objects like a package.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="束">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">束数単位</xs:documentation>
+          <xs:documentation xml:lang="en">Japanese unit expression for countable objects like a bundle.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="回">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">回数単位</xs:documentation>
+          <xs:documentation xml:lang="en">Japanese unit expression for countable objects like a time.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="件">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">件数単位</xs:documentation>
+          <xs:documentation xml:lang="en">Japanese unit expression for countable objects like a matter.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="式">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">式数単位</xs:documentation>
+          <xs:documentation xml:lang="en">Japanese unit expression for countable objects like a set.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="瓶">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">瓶数単位</xs:documentation>
+          <xs:documentation xml:lang="en">Japanese unit expression for countable objects like a bottle.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="坪">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">坪数単位</xs:documentation>
+          <xs:documentation xml:lang="en">Japanese area unit expression for about 3.3 square meters.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="反">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">反数単位</xs:documentation>
+          <xs:documentation xml:lang="en">Japanese area unit expression for about 1000 square meters.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="頭">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">頭数単位</xs:documentation>
+          <xs:documentation xml:lang="en">Japanese unit expression for number of animal.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="匹">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">匹数単位</xs:documentation>
+          <xs:documentation xml:lang="en">Japanese unit expression for number of animal.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="羽">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">羽数単位</xs:documentation>
+          <xs:documentation xml:lang="en">Japanese unit expression for number of bird.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="人">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">人数単位</xs:documentation>
+          <xs:documentation xml:lang="en">Japanese unit expression for number of human.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- 能率単位面積 -->
+  <xs:simpleType name="performanceUnitType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">使用可能な能率単位文字列を列挙して規定しています。</xs:documentation>
+      <xs:documentation xml:lang="en">Defines the unit string of performance value with enumerative list.</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="unitStringType">
+      <xs:enumeration value="a/h">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">作業能率単位表記</xs:documentation>
+          <xs:documentation xml:lang="en">Expression of unit of working performance.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="h/10a">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">作業能率単位表記</xs:documentation>
+          <xs:documentation xml:lang="en">Expression of unit of working performance.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- 単価単位型 -->
+  <xs:simpleType name="unitCostUnitType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">使用可能な単価単位文字列を列挙して規定しています。</xs:documentation>
+      <xs:documentation xml:lang="en">Defines the unit string of unit cost value with enumerative list.</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="unitStringType">
+      <xs:enumeration value="円/時">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">時給単位の日本語表記</xs:documentation>
+          <xs:documentation xml:lang="en">Japanese expression of unit of cost per hour.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="円/日">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">日給単位の日本語表記</xs:documentation>
+          <xs:documentation xml:lang="en">Japanese expression of unit of cost per day.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="円/月">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">月給単位の日本語表記</xs:documentation>
+          <xs:documentation xml:lang="en">Japanese expression of unit of cost per month.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- 任意単位文字列付き数値型（汎用） -->
+  <xs:complexType name="numericValueWithUnitType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">単位付き数値（実数値）---単位は要素属性として</xs:documentation>
+      <xs:documentation xml:lang="en">Defines numeric data type with its unit string as a optional attribute. Numeric date is defined as double.</xs:documentation>
+    </xs:annotation>
+    <xs:simpleContent>
+      <xs:extension base="xs:double">
+        <xs:attribute name="uom" type="unitStringType" use="optional">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">数値データ項目の単位文字列</xs:documentation>
+            <xs:documentation xml:lang="en">Unit string of numeric data type.</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+
+  <!-- 面積数値型 -->
+  <xs:complexType name="areaType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">面積型で属性に単位文字列付面積数値</xs:documentation>
+      <xs:documentation xml:lang="en">Defines aerial data type with its unit string.</xs:documentation>
+    </xs:annotation>
+    <xs:simpleContent>
+      <xs:extension base="xs:double">
+        <xs:attribute name="uom" type="areaUnitType" use="required">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">面積データ項目の単位文字列</xs:documentation>
+            <xs:documentation xml:lang="en">Unit string of aerial data type.</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+
+  <!-- 重量数値型 -->
+  <xs:complexType name="weightType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">質量・重量型で属性に単位を定義</xs:documentation>
+      <xs:documentation xml:lang="en">Defines weight data type with its unit string.</xs:documentation>
+    </xs:annotation>
+    <xs:simpleContent>
+      <xs:extension base="xs:double">
+        <xs:attribute name="uom" type="weightUnitType" use="required">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">重量データ項目の単位文字列</xs:documentation>
+            <xs:documentation xml:lang="en">Unit string of weight data type.</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+
+  <!-- 容量数値型 -->
+  <xs:complexType name="volumeType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">容積・容量型で属性に単位を定義</xs:documentation>
+      <xs:documentation xml:lang="en">Defines volume data type with its unit string.</xs:documentation>
+    </xs:annotation>
+    <xs:simpleContent>
+      <xs:extension base="xs:double">
+        <xs:attribute name="uom" type="volumeUnitType" use="required">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">容量データ項目の単位文字列</xs:documentation>
+            <xs:documentation xml:lang="en">Unit string of volume data type.</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+
+  <!-- 可算(Countable)数値型 -->
+  <xs:complexType name="countType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">数量カウントで属性に単位を定義</xs:documentation>
+      <xs:documentation xml:lang="en">Defines countable data type with its unit string.</xs:documentation>
+    </xs:annotation>
+    <xs:simpleContent>
+      <xs:extension base="xs:double">
+        <xs:attribute name="uom" type="countUnitType" use="required">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">可算データ項目の単位文字列</xs:documentation>
+            <xs:documentation xml:lang="en">Unit string of countable data type.</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+
+  <!-- 使用量型 -->
+  <xs:complexType name="amountType">
+    <xs:choice>
+      <xs:element name="Weight" type="weightType">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">重量データ</xs:documentation>
+          <xs:documentation xml:lang="en">Weight data</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="Volume" type="volumeType">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">容量データ</xs:documentation>
+          <xs:documentation xml:lang="en">Volume data</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="Count" type="countType">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">数量データ</xs:documentation>
+          <xs:documentation xml:lang="en">Countable data</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:choice>
+  </xs:complexType>
+
+  <!-- 収量型 -->
+  <xs:complexType name="yieldType">
+    <xs:choice>
+      <xs:element name="Weight" type="weightType">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">重量データ</xs:documentation>
+          <xs:documentation xml:lang="en">Weight data</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="Volume" type="volumeType">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">容量データ</xs:documentation>
+          <xs:documentation xml:lang="en">Volume data</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="Count" type="countType">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">数量データ</xs:documentation>
+          <xs:documentation xml:lang="en">Countable data</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:choice>
+  </xs:complexType>
+
+  <!-- 単位面積使用量型 -->
+  <xs:complexType name="amountPerAreaType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">面積当たり使用量（重量，容量，員数）</xs:documentation>
+      <xs:documentation xml:lang="en">Defines amount data type per unit area.</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension base="amountType">
+        <xs:attribute name="uoa" type="areaUnitType" use="required">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">面積単位文字列</xs:documentation>
+            <xs:documentation xml:lang="en">Areial unit string</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <!-- 単位面積収量型 -->
+  <xs:complexType name="yieldPerAreaType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">面積当たり収量（重量・員数）</xs:documentation>
+      <xs:documentation xml:lang="en">Defines yield data type per unit area.</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension base="yieldType">
+        <xs:attribute name="uoa" type="areaUnitType" use="required">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">面積単位文字列</xs:documentation>
+            <xs:documentation xml:lang="en">Areial unit string</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <!-- 面積能率型 -->
+  <xs:complexType name="performanceType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">機械作業能率</xs:documentation>
+      <xs:documentation xml:lang="en">Defines performance data type.</xs:documentation>
+    </xs:annotation>
+    <xs:simpleContent>
+      <xs:extension base="xs:double">
+        <xs:attribute name="uom" type="performanceUnitType" use="required">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">能率単位文字列</xs:documentation>
+            <xs:documentation xml:lang="en">Performance unit string</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+
+  <!-- 倍率｜比率型 -->
+  <xs:simpleType name="ratioType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">希釈倍率</xs:documentation>
+      <xs:documentation xml:lang="en">Defines dilution data type.</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:double">
+      <xs:minExclusive value="0.0"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- 成分比率型 -->
+  <xs:complexType name="ingredientWeightPercentType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">重量成分比率（重量百分率）</xs:documentation>
+      <xs:documentation xml:lang="en">Defines weight ratio data type.</xs:documentation>
+    </xs:annotation>
+    <xs:simpleContent>
+      <xs:extension base="xs:double">
+        <xs:attribute name="uom" type="unitStringType" default="%">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">重量百分率単位文字列（既定は"%"）</xs:documentation>
+            <xs:documentation xml:lang="en">Unit string of weight ratio, default is '%'</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+  <xs:complexType name="ingredientWeightRatioType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">重量成分比</xs:documentation>
+      <xs:documentation xml:lang="en">Defines ingredient weight rate data type.</xs:documentation>
+    </xs:annotation>
+    <xs:simpleContent>
+      <xs:extension base="xs:double">
+        <xs:attribute name="uom" type="unitStringType" default="mg/100g">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">重量成分比単位文字列（既定は"mg/100g"）</xs:documentation>
+            <xs:documentation xml:lang="en">Unit string of ingredient weight rate, default is 'mg/100g'</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+
+  <!-- 金額型 -->
+  <xs:complexType name="priceType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">金額（単位文字列付き）</xs:documentation>
+      <xs:documentation xml:lang="en">Defines price data type with its unit string.</xs:documentation>
+    </xs:annotation>
+    <xs:simpleContent>
+      <xs:extension base="xs:decimal">
+        <xs:attribute name="uom" type="unitStringType" default="円">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">金額単位文字列（既定は「円」）</xs:documentation>
+            <xs:documentation xml:lang="en">Unit string of price data, default is Japanese string of Yen(JPY):"円"</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+  <xs:complexType name="costType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">金額（単位文字列付き）</xs:documentation>
+      <xs:documentation xml:lang="en">Defines monetary data type with its unit string.</xs:documentation>
+    </xs:annotation>
+    <xs:simpleContent>
+      <xs:extension base="xs:decimal">
+        <xs:attribute name="uom" type="unitStringType" default="円">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">金額単位文字列（既定は「円」）</xs:documentation>
+            <xs:documentation xml:lang="en">Unit string of cost data, default is Japanese string of Yen(JPY):"円"</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+
+  <!-- 単価型 -->
+  <xs:complexType name="unitPriceType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">価格単価</xs:documentation>
+      <xs:documentation xml:lang="en">Defines unit price data type with its unit string.</xs:documentation>
+    </xs:annotation>
+    <xs:simpleContent>
+      <xs:extension base="xs:decimal">
+        <xs:attribute name="uom" type="unitCostUnitType" use="required">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">単価単位文字列</xs:documentation>
+            <xs:documentation xml:lang="en">Unit string of unit price</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+  <xs:complexType name="unitCostType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">費用単価</xs:documentation>
+      <xs:documentation xml:lang="en">Defines unit cost data type with its unit string.</xs:documentation>
+    </xs:annotation>
+    <xs:simpleContent>
+      <xs:extension base="xs:decimal">
+        <xs:attribute name="uom" type="unitCostUnitType" use="required">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">費用単価単位文字列</xs:documentation>
+            <xs:documentation xml:lang="en">Unit string of unit cost</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+
+  <!-- 西暦年型 -->
+  <xs:simpleType name="yearType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">1900年以降の西暦年とする</xs:documentation>
+      <xs:documentation xml:lang="en">Defines year data type as a integer value.</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:integer">
+      <xs:minInclusive value="1900"/>
+      <xs:maxInclusive value="2100"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- 期間・所要時間型 -->
+  <xs:complexType name="durationType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">所要時間型を定義しています</xs:documentation>
+      <xs:documentation xml:lang="en">Defines time span data type with its unit string.</xs:documentation>
+    </xs:annotation>
+    <xs:simpleContent>
+      <xs:extension base="xs:nonNegativeInteger">
+        <xs:attribute name="uom" type="timeUnitType" use="required">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">所要時間単位文字列</xs:documentation>
+            <xs:documentation xml:lang="en">Unit string of time span data</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+
+  <xs:simpleType name="nameType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">名称の文字数上限を20文字とする</xs:documentation>
+      <xs:documentation xml:lang="en">Defines name data type with at most 20 characters.</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:normalizedString">
+      <xs:maxLength value="20"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="longNameType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">長い名称の文字数上限を50文字とする</xs:documentation>
+      <xs:documentation xml:lang="en">Defines name data type with at most 30 characters.</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:normalizedString">
+      <xs:maxLength value="50"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- 人数型 -->
+  <xs:complexType name="numOfPersonType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">人数型を定義しています。</xs:documentation>
+      <xs:documentation xml:lang="en">Defines data type for number of person with its unit string.</xs:documentation>
+    </xs:annotation>
+    <xs:simpleContent>
+      <xs:extension base="xs:nonNegativeInteger">
+        <xs:attribute name="uom" type="unitStringType" default="人">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">人数単位（既定は「人」）</xs:documentation>
+            <xs:documentation xml:lang="en">Unit string of number of person</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+
+  <!-- バーコード型 -->
+  <xs:simpleType name="barcodeType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">JANコードなどのバーコード文字列（最長20文字）</xs:documentation>
+      <xs:documentation xml:lang="en">Defines barcode date type with at most 20 characters.</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:normalizedString">
+      <xs:maxLength value="20"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- 住所型 -->
+  <xs:complexType name="addressType">
+    <xs:annotation>
+      <xs:documentation xml:lang="de">Vorheriger deutscher Name: NameAndAddressType. orientiert an organicXML, angelehnt an EAN-UCC, http://organicxml.com/schema/xsd/organicXML-0.1b/NameAndAddress.xsd</xs:documentation>
+      <xs:documentation xml:lang="en">Previous german name: NameAndAddressType</xs:documentation>
+      <xs:documentation xml:lang="ja">agroXML:NameAndAddressTypeを参考に定義したユーザ情報。人や組織・団体の名称・住所などのデータ型を定義しています。</xs:documentation>
+      <xs:documentation xml:lang="en">Defines the name, address and other profiles of person, organization, and so on.</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="Title" type="nameType" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">肩書き</xs:documentation>
+          <xs:documentation xml:lang="en">Title</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="Name" type="nameType">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">名称・名前</xs:documentation>
+          <xs:documentation xml:lang="en">Name</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="FirstName" type="nameType" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">名</xs:documentation>
+          <xs:documentation xml:lang="en">First name</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="LastName" type="nameType" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">姓</xs:documentation>
+          <xs:documentation xml:lang="en">Last name / family name</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="POBoxNumber" type="xs:normalizedString" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">私書箱番号</xs:documentation>
+          <xs:documentation xml:lang="en">Post office box number</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="PostalCode" type="xs:normalizedString" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">郵便番号</xs:documentation>
+          <xs:documentation xml:lang="en">Zip code</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="StreetAddressOne" type="xs:normalizedString" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">街区（町丁目番地）その１</xs:documentation>
+          <xs:documentation xml:lang="en">Street address 1/2</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="StreetAddressTwo" type="xs:normalizedString" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">街区（建物・戸番など）その２</xs:documentation>
+          <xs:documentation xml:lang="en">Street addres 2/2</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="City" type="xs:normalizedString" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">市区町村名</xs:documentation>
+          <xs:documentation xml:lang="en">Name of city</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="Prefecture" type="xs:normalizedString" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">都道府県名</xs:documentation>
+          <xs:documentation xml:lang="en">Name of prefecture</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="Country" type="xs:normalizedString">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">国・州名</xs:documentation>
+          <xs:documentation xml:lang="en">Name of country</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="gml:Point" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">空間座標</xs:documentation>
+          <xs:documentation xml:lang="en">Spatial coordination related to this person or organization</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- 連絡先型 -->
+  <xs:complexType name="contactType">
+    <xs:annotation>
+      <xs:documentation xml:lang="de">Vorheriger deutscher Name: KontaktType. orientiert an organicXML, angelehnt an EAN-UCC, http://organicxml.com/schema/xsd/organicXML-0.1b/NameAndAddress.xsd</xs:documentation>
+      <xs:documentation xml:lang="en">Elements for values of contact informations like phone and mail.</xs:documentation>
+      <xs:documentation xml:lang="ja">電話番号やメールアドレスなどの連絡先（コンタクト）情報を定義しています。</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="Phone" type="xs:normalizedString" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">電話番号</xs:documentation>
+          <xs:documentation xml:lang="en">Telephone number</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="Mobile" type="xs:normalizedString" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">携帯番号</xs:documentation>
+          <xs:documentation xml:lang="en">Mobile phone number</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="Fax" type="xs:normalizedString" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">FAX番号</xs:documentation>
+          <xs:documentation xml:lang="en">FAX number</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="Email" type="xs:normalizedString" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">E-mailアドレス</xs:documentation>
+          <xs:documentation xml:lang="en">e-mail address</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="URI" type="xs:anyURI" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">任意のURI</xs:documentation>
+          <xs:documentation xml:lang="en">Any URI related to this contact</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- 特記事項 -->
+  <xs:simpleType name="noteType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">備考メモ・特記事項（自由記入内容）最大100文字のデータ型</xs:documentation>
+      <xs:documentation xml:lang="en">Defines note data type with at most 100 letters.</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:normalizedString">
+      <xs:maxLength value="100"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="note400Type">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">備考メモ・特記事項（自由記入内容）最大400文字のデータ型</xs:documentation>
+      <xs:documentation xml:lang="en">Defines note date type with at most 400 letters.</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:normalizedString">
+      <xs:maxLength value="400"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- ユーザ定義データ型識別文字型 -->
+  <xs:simpleType name="dataTypeStringType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">ユーザ定義データ型識別子（1文字）文字型</xs:documentation>
+      <xs:documentation xml:lang="en">Defines the directive letter defining data type of user defined data.</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:normalizedString">
+      <xs:enumeration value="C">
+        <!-- 文字列（テキスト） -->
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">C:ユーザ定義型データが文字列データであることを規定します。</xs:documentation>
+          <xs:documentation xml:lang="en">C:Defines the data type of user defined data is string.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="N">
+        <!-- 整数型 -->
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">N:ユーザ定義型データが整数値データであることを規定します。</xs:documentation>
+          <xs:documentation xml:lang="en">N:Defines the data type of user defined data is numeric(integer).</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="F">
+        <!-- 実数型 -->
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">F:ユーザ定義型データが実数値データであることを規定します。</xs:documentation>
+          <xs:documentation xml:lang="en">F:Defines the data type of user defined data is real(floating point date).</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="D">
+        <!-- 日時型 -->
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">D:ユーザ定義型データが日時型データであることを規定します。</xs:documentation>
+          <xs:documentation xml:lang="en">D:Defines the data type of user defined data is datetime.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="L">
+        <!-- 論理型 -->
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">N:ユーザ定義型データが論理型データであることを規定します。</xs:documentation>
+          <xs:documentation xml:lang="en">N:Defines the data type of user defined data is logical.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="U">
+        <!-- URL型 -->
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">U:ユーザ定義型データが任意のURI型（文字列）データであることを規定します。</xs:documentation>
+          <xs:documentation xml:lang="en">U:Defines the data type of user defined data is any URI string.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="I">
+        <!-- 画像型 -->
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">I:ユーザ定義型データが画像データであることを規定します。</xs:documentation>
+          <xs:documentation xml:lang="en">I:Defines the data type of user defined data is image type.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="S">
+        <!-- 選択型 -->
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">S:ユーザ定義型データが選択型データであることを規定します。</xs:documentation>
+          <xs:documentation xml:lang="en">S:Defines the data type of user defined data is selection list.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="M">
+        <!-- 動画型 added on 25-May-2012 by D.J. : for Movie type -->
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">M:ユーザ定義型データが動画データであることを規定します。</xs:documentation>
+          <xs:documentation xml:lang="en">M:Defines the data type of user defined data is movie type.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="A">
+        <!-- 音声型 added on 25-May-2012 by D.J. : for Audio type -->
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">A:ユーザ定義型データが音声データであることを規定します。</xs:documentation>
+          <xs:documentation xml:lang="en">A:Defines the data type of user defined data is audio type.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="B">
+        <!-- バーコード型 added on 20-Jul-2012 by D.J. : for Barcode type -->
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">B:ユーザ定義型データがバーコードデータ（文字列）であることを規定します。</xs:documentation>
+          <xs:documentation xml:lang="en">B:Defines the data type of user defined data is bar code type ( string ).</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- バイナリ文字列型 -->
+  <xs:complexType name="binaryStringType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">バイナリデータ表現としていずれかを使用・・・</xs:documentation>
+      <xs:documentation xml:lang="en">Defines binary string data type.</xs:documentation>
+    </xs:annotation>
+    <xs:choice>
+      <xs:element name="Base64" type="xs:base64Binary">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">バイナリデータをBASE64文字列で表記します。</xs:documentation>
+          <xs:documentation xml:lang="en">Expresses binary data as BASE64 string.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="Hex" type="xs:hexBinary">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">バイナリデータをBASE64文字列で表記します。</xs:documentation>
+          <xs:documentation xml:lang="en">Expresses binary data as BASE64 string.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="URI" type="xs:anyURI">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">外部参照利用</xs:documentation>
+          <xs:documentation xml:lang="en">Refers to any URI ( binary data is stored at the reference point ).</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:choice>
+  </xs:complexType>
+
+  <!-- 作業データ種別型 -->
+  <xs:simpleType name="workTypeNumberType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">作業レコードタイプ（0:当初，1:実行，2:実績）, added on 20-Jul-2012 by D.J.</xs:documentation>
+      <xs:documentation xml:lang="en">Defines the type number of work data as 0:first plan, 1:exective plan, 2:result.</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:int">
+      <xs:enumeration value="0">
+        <!-- 当初計画 -->
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">当初計画</xs:documentation>
+          <xs:documentation xml:lang="en">First plan</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="1">
+        <!-- 実行計画 -->
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">実行計画</xs:documentation>
+          <xs:documentation xml:lang="en">Execution plan</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="2">
+        <!-- 実績 -->
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">実行結果（実績）</xs:documentation>
+          <xs:documentation xml:lang="en">Execution result</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- GUID型 -->
+  <xs:simpleType name="guidType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">GUID型（文字列）を定義しています。</xs:documentation>
+      <xs:documentation xml:lang="en">Defines GUID data type.</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:normalizedString">
+      <xs:pattern value="[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!--********-->
+  <!--単純属性-->
+  <!--********-->
+  <xs:attribute name="acl" type="aclStringType" default="Owner">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">ACL指定属性：既定は所有者（Owner）</xs:documentation>
+      <xs:documentation xml:lang="en">Attribute to indicate the access level. Default level is restricted to 'Owner'.</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+
+  <xs:attribute name="code-type" type="codeType" default="undefined">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">コード体系指定属性：既定は未定義(undefined)</xs:documentation>
+      <xs:documentation xml:lang="en">Attribute to indicate the definition type of code. Default is that the code type is 'undefined'.</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+
+  <xs:attribute name="code-id" type="codeTypeID">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">コード体系ID指定属性</xs:documentation>
+      <xs:documentation xml:lang="en">Attribute to indicate the ID of code</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+
+  <xs:attribute name="code-name" type="codeTypeName">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">コード体系名指定属性</xs:documentation>
+      <xs:documentation xml:lang="en">Attribute to indicate the name of code</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+
+  <xs:attribute name="code-author" type="xs:string">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">コード体系定義者名</xs:documentation>
+      <xs:documentation xml:lang="en">Attribute to indicate the author of code</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+
+  <xs:attribute name="code-uri" type="xs:anyURI">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">コード体系参照URI：コード体系自体の定義情報を参照するURI</xs:documentation>
+      <xs:documentation xml:lang="en">Attribute to indicate the url where the code system is defined.</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+
+  <xs:attribute name="code-ref" type="xs:anyURI">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">コード体系参照先：コード体系を定義運営している団体等，コード体系についての参照URI</xs:documentation>
+      <xs:documentation xml:lang="en">Attribute to indicate the url where the reference information on the code is published.</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+
+  <!--************-->
+  <!--属性グループ-->
+  <!--************-->
+  <xs:attributeGroup name="acls">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">アクセス権情報群を定義します。</xs:documentation>
+      <xs:documentation xml:lang="en">Defines attribute group for access level information.</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="acl" type="aclStringType" use="optional" default="Owner">
+      <xs:annotation>
+        <xs:documentation xml:lang="ja">アクセス権情報</xs:documentation>
+        <xs:documentation xml:lang="en">Access level information</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+
+  <xs:attributeGroup name="code">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">コート体系メタ情報記述属性グループを規定</xs:documentation>
+      <xs:documentation xml:lang="en">Defines attribute group for any code system.</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="code-type" type="codeType" use="optional" default="undefined">
+      <xs:annotation>
+        <xs:documentation xml:lang="ja">コード定義状態（既定は「未定義」）</xs:documentation>
+        <xs:documentation xml:lang="en">Status of code syste definition. Default is 'undefined'.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="code-id" type="codeTypeID" use="optional">
+      <xs:annotation>
+        <xs:documentation xml:lang="ja">コードID属性</xs:documentation>
+        <xs:documentation xml:lang="en">Attribute of Code ID</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="code-name" type="codeTypeName" use="optional">
+      <xs:annotation>
+        <xs:documentation xml:lang="ja">コード名称</xs:documentation>
+        <xs:documentation xml:lang="en">Attribute of code name</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="code-author" type="nameType" use="optional">
+      <xs:annotation>
+        <xs:documentation xml:lang="ja">コード作成者</xs:documentation>
+        <xs:documentation xml:lang="en">Attribute of code author</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="code-uri" type="xs:anyURI" use="optional">
+      <xs:annotation>
+        <xs:documentation xml:lang="ja">コード定義参照先URI</xs:documentation>
+        <xs:documentation xml:lang="en">Attribute of code reference</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="code-ref" type="xs:anyURI" use="optional">
+      <xs:annotation>
+        <xs:documentation xml:lang="ja">コード定義先参照URI</xs:documentation>
+        <xs:documentation xml:lang="en">Attribute of reference to organization where the code system is defined</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+
+  <!--********-->
+  <!--コード型-->
+  <!--********-->
+  <xs:complexType name="numericCodeType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">数値コード（ID値）型</xs:documentation>
+      <xs:documentation xml:lang="en">Defines numeric code element.</xs:documentation>
+    </xs:annotation>
+    <xs:simpleContent>
+      <xs:extension base="xs:integer">
+        <xs:attributeGroup ref="fp:code">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">コードの属性（メタ情報）を保持します。</xs:documentation>
+            <xs:documentation xml:lang="en">Attribute to indicate the meta data of code system</xs:documentation>
+          </xs:annotation>
+        </xs:attributeGroup>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+
+  <xs:complexType name="positiveCodeType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">正整数値コード</xs:documentation>
+      <xs:documentation xml:lang="en">Defines positive numeric code element.</xs:documentation>
+    </xs:annotation>
+    <xs:simpleContent>
+      <xs:extension base="xs:positiveInteger">
+        <xs:attributeGroup ref="fp:code">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">コードの属性（メタ情報）を保持します。</xs:documentation>
+            <xs:documentation xml:lang="en">Attribute to indicate the meta data of code system</xs:documentation>
+          </xs:annotation>
+        </xs:attributeGroup>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+
+  <xs:complexType name="nonNegativeCodeType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">非負値コード</xs:documentation>
+      <xs:documentation xml:lang="en">Defines non-negative numeric code element.</xs:documentation>
+    </xs:annotation>
+    <xs:simpleContent>
+      <xs:extension base="xs:nonNegativeInteger">
+        <xs:attributeGroup ref="fp:code">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">コードの属性（メタ情報）を保持します。</xs:documentation>
+            <xs:documentation xml:lang="en">Attribute to indicate the meta data of code system</xs:documentation>
+          </xs:annotation>
+        </xs:attributeGroup>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+
+  <xs:complexType name="stringCodeType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">文字コード型</xs:documentation>
+      <xs:documentation xml:lang="en">Defines text code element.</xs:documentation>
+    </xs:annotation>
+    <xs:simpleContent>
+      <xs:extension base="xs:normalizedString">
+        <xs:attributeGroup ref="fp:code">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">コードの属性（メタ情報）を保持します。</xs:documentation>
+            <xs:documentation xml:lang="en">Attribute to indicate the meta data of code system</xs:documentation>
+          </xs:annotation>
+        </xs:attributeGroup>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+
+  <!--********-->
+  <!--単純要素-->
+  <!--********-->
+  <!--ドキュメントヘッダに使われる要素-->
+  <xs:element name="Author" type="nameType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">ドキュメントの作成者：通常このスキーマに沿ったドキュメントを生成した主体（人・組織など）</xs:documentation>
+      <xs:documentation xml:lang="en">Element stores author's information ( usually it is name )</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <!-- 2015年12月のSIP技術体系DB打ち合わせでFRI側からの要請に基づき追加 -->
+  <xs:element name="AuthorDetail">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">作成者の詳細プロフィール</xs:documentation>
+      <xs:documentation xml:lang="en">Detail of author's profile</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="affiliation" type="nameType" minOccurs="0"/>
+        <xs:element name="DivisionName" type="nameType" minOccurs="0"/>
+        <xs:element name="GroupName" type="nameType" minOccurs="0"/>
+        <xs:element name="RoomName" type="nameType" minOccurs="0"/>
+        <xs:element name="TeamName" type="nameType" minOccurs="0"/>
+        <xs:element name="FullName" type="nameType" minOccurs="0"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="Create" type="xs:dateTime">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">ドキュメントの生成日時</xs:documentation>
+      <xs:documentation xml:lang="en">Date and time when the document is created.</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="Update" type="xs:dateTime">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">ドキュメントの更新日時</xs:documentation>
+      <xs:documentation xml:lang="en">Date and time when the document is updated.</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="Generator" type="xs:normalizedString">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">ドキュメントを生成したプログラム名など</xs:documentation>
+      <xs:documentation xml:lang="en">Name of document generator</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="Version" type="xs:normalizedString">
+    <xs:annotation>
+      <xs:documentation xml:lang ="ja">ドキュメントバージョン</xs:documentation>
+      <xs:documentation xml:lang="en">Version informatio of document</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="Credit" type="xs:normalizedString">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">ドキュメントのクレジット表示</xs:documentation>
+      <xs:documentation xml:lang="en">Credit string of document</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="Guid" type="guidType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">汎用GUID（ここではこの文書自体の識別用GUID）</xs:documentation>
+      <xs:documentation xml:lang="en">GUID for document</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+
+  <!--農家・作業者等人物・組織の共通情報-->
+  <!--xs:element name="PersonID" type="xs:positiveInteger"-->
+  <xs:element name="PersonID" type="positiveCodeType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">農家・作業者・組織などの識別コード（正整数）</xs:documentation>
+      <xs:documentation xml:lang="en">Positive numeric identifier for farmer, worker, organization and so on</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="PersonCode" type="stringCodeType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">農家・作業者・組織などの識別コード（文字列）</xs:documentation>
+      <xs:documentation xml:lang="en">Identifier for farmer, worker, organization and so on</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="PersonName" type="nameType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">農家・作業者・組織などの識別名称</xs:documentation>
+      <xs:documentation xml:lang="en">Identifier for farmer, worker, organization and so on</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="OrganizationID" type="positiveCodeType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">所属組織などの識別コード（正整数）</xs:documentation>
+      <xs:documentation xml:lang="en">Positive numeric identifier for organization</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="OrganizationCode" type="stringCodeType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">所属組織などの識別コード（文字列）</xs:documentation>
+      <xs:documentation xml:lang="en">String identifier for organization</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="OrganizationName" type="longNameType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">所属組織などの名称</xs:documentation>
+      <xs:documentation xml:lang="en">Identifier for farmer, worker, organization and so on.</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="Birth" type="xs:date">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">誕生日・設立日など（日付型）</xs:documentation>
+      <xs:documentation xml:lang="en">Birthday of person / established date of organization, etc.</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="Age" type="xs:nonNegativeInteger">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">年齢</xs:documentation>
+      <xs:documentation xml:lang="en">Age of person or orgainization</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="Note" type="noteType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">任意の目的に使用するメモ（備考欄）100文字以内</xs:documentation>
+      <xs:documentation xml:lang="en">Memorandum with at most 100 letters</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+
+  <!--農家・作業者情報（農家マスタ・作業者マスタ）関係要素-->
+  <xs:element name="ResidentialArea" type="nameType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">農家・組織等の住所地区名</xs:documentation>
+      <xs:documentation xml:lang="en">Name of residential area of farmer, organization</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="MemberFlag" type="xs:boolean">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">組合員か否か</xs:documentation>
+      <xs:documentation xml:lang="en">Element indicating whether member or not</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="CustomerFlag" type="xs:boolean">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">顧客（出荷先）か否か</xs:documentation>
+      <xs:documentation xml:lang="en">Element indicating whether customer or not</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="SupplierFlag" type="xs:boolean">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">仕入れ先か否か</xs:documentation>
+      <xs:documentation xml:lang="en">Element indicating whether supplier or not</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="JAN" type="barcodeType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">項目に対するJAN相当コード文字列（最大20文字）：各種マスタ・台帳で使用される</xs:documentation>
+      <xs:documentation xml:lang="en">JAN code with at most 20 letters</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="WorkerNote" type="noteType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">作業者についての特記事項</xs:documentation>
+      <xs:documentation xml:lang="en">Memo about worker</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="MemberNote" type="noteType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">農家・組織等についての特記事項</xs:documentation>
+      <xs:documentation xml:lang="en">Memo about member</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="UnitCost" type="unitCostType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">作業者の単価（月給，日給，時給など）</xs:documentation>
+      <xs:documentation xml:lang="en">Unit pay of worker</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+
+  <!--////////////////////////////////////////////////-->
+  <!--農場情報：Farm子要素（他の要素でも使用されます）-->
+  <!--////////////////////////////////////////////////-->
+  <!--xs:element name="FarmID" type="xs:positiveInteger"-->
+  <xs:element name="FarmID" type="positiveCodeType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">農場識別コード（正整数⇒文字列にすべき？多分文字コードに変更でしょう）</xs:documentation>
+      <xs:documentation xml:lang="en">Positive numeric identifier of farm</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="FarmCode" type="stringCodeType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">農場識別コード（文字列型のコード）</xs:documentation>
+      <xs:documentation xml:lang="en">String coded identifier of farm</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="FarmName" type="longNameType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">農場の名称</xs:documentation>
+      <xs:documentation xml:lang="en">Distinguished name of farm</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="FarmGuid" type="guidType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">農場GUID</xs:documentation>
+      <xs:documentation xml:lang="en">GUID of farm</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="Address" type="addressType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">農場，作業者，組織等主体の住所</xs:documentation>
+      <xs:documentation xml:lang="en">Address information of farm, organization</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="Contact" type="contactType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">主体の連絡先</xs:documentation>
+      <xs:documentation xml:lang="en">Contact information of farm, organization</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <!--xs:element name="FileID" type="xs:normalizedString"-->
+  <xs:element name="FileID" type="stringCodeType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">ドキュメントに対応するPMS管理ファイルコード</xs:documentation>
+      <xs:documentation xml:lang="en">Localy defined code by PMS system related to document</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="FileName" type="xs:normalizedString">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">ドキュメントに対応するPMS管理ファイルの名称</xs:documentation>
+      <xs:documentation xml:lang="en">File name managed by PMS system related to document</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="FileGuid" type="guidType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">管理ファイルGUID</xs:documentation>
+      <xs:documentation xml:lang="en">GUID of the file managed by PMS system related to document</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+
+  <!--///////////////////////////-->
+  <!--主に土地情報：Fieldの子要素-->
+  <!--///////////////////////////-->
+  <!--xs:element name="FieldID" type="xs:positiveInteger"-->
+  <xs:element name="FieldID" type="positiveCodeType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">圃場番号（連番値）：圃場を特定するキーとして各所で使用される</xs:documentation>
+      <xs:documentation xml:lang="en">Positive numeric identifier of field</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <!--xs:element name="FieldCode" type="xs:normalizedString"-->
+  <xs:element name="FieldCode" type="stringCodeType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">圃場コード：圃場を識別するコード文字列（対人用）</xs:documentation>
+      <xs:documentation xml:lang="en">String coded identifier of field</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="ZoneName" type="nameType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">圃場の属する地区名（大字など）</xs:documentation>
+      <xs:documentation xml:lang="en">Local area name of field</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="SubZoneName" type="nameType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">圃場の属する地区詳細名（小字など）：前項の地区名を細区分した地区名</xs:documentation>
+      <xs:documentation xml:lang="en">Local area name of field</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="IrrgAreaName" type="nameType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">圃場の属する水域・水系名</xs:documentation>
+      <xs:documentation xml:lang="en">Irrigation system name of field</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="FieldNumber" type="xs:string">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">圃場の地番（地区・地区詳細以下の番地）</xs:documentation>
+      <xs:documentation xml:lang="en">Street address of field</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="FieldName" type="nameType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">圃場の名称・呼び名・通称など</xs:documentation>
+      <xs:documentation xml:lang="en">Name ( calling name ) of field</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="RegisteredArea" type="areaType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">地籍（登記）上の面積（地積）</xs:documentation>
+      <xs:documentation xml:lang="en">Area on land registry</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="CultivateArea" type="areaType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">耕作面積・水張り面積など，実際に作付可能な面積</xs:documentation>
+      <xs:documentation xml:lang="en">Cultivating area</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+
+  <xs:element name="FarmerID" type="positiveCodeType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">農業者コード（正整数型）</xs:documentation>
+      <xs:documentation xml:lang="en">Positive numeric identifier of farmer</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="FarmerCode" type="stringCodeType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">農業者コード（文字列型）</xs:documentation>
+      <xs:documentation xml:lang="en">String coded identifier of farmer</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="FarmerName" type="nameType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">農業者名</xs:documentation>
+      <xs:documentation xml:lang="en">Name of farmer</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <!--xs:element name="OwnerID" type="xs:positiveInteger"-->
+  <xs:element name="OwnerID" type="positiveCodeType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">圃場の所有者（地主）のPersionID</xs:documentation>
+      <xs:documentation xml:lang="en">Positive numeric identifier of field owner</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="OwnerCode" type="stringCodeType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">圃場所有者コード</xs:documentation>
+      <xs:documentation xml:lang="en">String coded identifier of field owner</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="OwnerName" type="nameType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">圃場所有者名</xs:documentation>
+      <xs:documentation xml:lang="en">Name of field owner</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <!--xs:element name="WorkerID" type="xs:positiveInteger"-->
+  <xs:element name="WorkerID" type="positiveCodeType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">圃場の耕作・管理担当者のPersonID</xs:documentation>
+      <xs:documentation xml:lang="en">Positive numeric identifier of worker assigned to field</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="WorkerCode" type="stringCodeType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">圃場管理担当者コード</xs:documentation>
+      <xs:documentation xml:lang="en">String coded identifier of worker assigned to field</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="WorkerName" type="nameType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">圃場管理担当者名</xs:documentation>
+      <xs:documentation xml:lang="en">Name of worker assigned to field</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <!--xs:element name="MowerID" type="xs:positiveInteger"-->
+  <xs:element name="MowerID" type="positiveCodeType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">圃場の草管理担当者のPersonID</xs:documentation>
+      <xs:documentation xml:lang="en">Positive numeric identifer of worker assigned to mowing management of field</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="MowerCode" type="stringCodeType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">圃場の草管理担当者コード</xs:documentation>
+      <xs:documentation xml:lang="en">String coded identifer of worker assigned to mowing management of field</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="MowerName" type="nameType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">圃場の草管理担当者名</xs:documentation>
+      <xs:documentation xml:lang="en">Name of worker assigned to mowing management of field</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <!--xs:element name="IrrigatorID" type="xs:positiveInteger"-->
+  <xs:element name="IrrigatorID" type="positiveCodeType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">圃場の水管理担当者のPersonID</xs:documentation>
+      <xs:documentation xml:lang="en">Positive numeric identifer of worker assigned to irrigation management of field</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="IrrigatorCode" type="stringCodeType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">圃場の水管理担当者コード</xs:documentation>
+      <xs:documentation xml:lang="en">String coded identifer of worker assigned to irrigation management of field</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="IrrigatorName" type="nameType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">圃場の水管理担当者名</xs:documentation>
+      <xs:documentation xml:lang="en">Name of worker assigned to irrigation management of field</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+
+  <!--主に作物マスタ：Cropの子要素-->
+  <!--xs:element name="CropID" type="xs:positiveInteger"-->
+  <xs:element name="CropID" type="positiveCodeType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">作物コード（正整数）：作物マスタで定義され，作付情報など各所で参照される</xs:documentation>
+      <xs:documentation xml:lang="en">Positive numeric identifier of crop</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="CropCode" type="stringCodeType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">作物コード（文字列型）</xs:documentation>
+      <xs:documentation xml:lang="en">String coded identifier of crop</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="CropName" type="nameType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">作物名</xs:documentation>
+      <xs:documentation xml:lang="en">Crop name</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <!--xs:element name="VarietyID" type="xs:positiveInteger"-->
+  <xs:element name="VarietyID" type="positiveCodeType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">品種コード（正整数）：作物マスタで作物ごとに定義され（作物依存=作物ごとにユニーク），作付情報など各所で参照される</xs:documentation>
+      <xs:documentation xml:lang="en">Positive numeric identifier of crop variety</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="VarietyCode" type="stringCodeType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">品種コード（文字列型）</xs:documentation>
+      <xs:documentation xml:lang="en">String coded identifier of crop variety</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="VarietyName" type="nameType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">品種名</xs:documentation>
+      <xs:documentation xml:lang="en">Crop variety name</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="SeedAmount" type="amountPerAreaType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">反当種子量</xs:documentation>
+      <xs:documentation xml:lang="en">Default amount of seed necessary to planting in unit area of field</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="SeedingFrom" type="xs:date">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">播種開始日</xs:documentation>
+      <xs:documentation xml:lang="en">Date of starting the term of cultivation, usually the date of seeding</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="SeedingUpto" type="xs:date">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">播種終了日</xs:documentation>
+      <xs:documentation xml:lang="en">Date of ending the term of cultivation, usually the date of harvesting</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+
+  <!-- 主に作型マスタ：CroppingTypeの子要素 -->
+  <!-- 作型コード 29-Aug-2014 by D.J. -->
+  <!--xs:element name="CroppingTypeID" type="xs:positiveInteger"-->
+  <xs:element name="CroppingTypeID" type="positiveCodeType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">作型コード（正整数）</xs:documentation>
+      <xs:documentation xml:lang="en">Positive numeric identifier of croping type(cultivation system)</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="CroppingTypeCode" type="stringCodeType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">作型コード（文字列型）</xs:documentation>
+      <xs:documentation xml:lang="en">String coded identifier of crop variety</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="CroppingTypeName" type="nameType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">作型名</xs:documentation>
+      <xs:documentation xml:lang="en">Name of cropping type(cultivation system)</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="CroppingTermStart" type="xs:positiveInteger">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">作型開始日</xs:documentation>
+      <xs:documentation xml:lang="en">Date of term start of cropping type</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="CroppingTermEnd" type="xs:positiveInteger">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">作型終了日</xs:documentation>
+      <xs:documentation xml:lang="en">Date of term end of cropping type</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="WorkTermStart" type="xs:positiveInteger">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">作業時期開始日</xs:documentation>
+      <xs:documentation xml:lang="en">Date of term start of cropping type</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="WorkTermEnd" type="xs:positiveInteger">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">作業時期終了日</xs:documentation>
+      <xs:documentation xml:lang="en">Date of term end of work</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+
+  <!--主に作付・土地利用情報：Cultivationの子要素-->
+  <xs:element name="CroppingNo" type="xs:positiveInteger">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">作付番号（正整数）：圃場（FieldID）ごとの作付を識別する番号</xs:documentation>
+      <xs:documentation xml:lang="en">Positive numeric identifier of croping No.</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="CroppingName" type="nameType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">作付け名</xs:documentation>
+      <xs:documentation xml:lang="en">Cropping name</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="CroppingYear" type="yearType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">作付年</xs:documentation>
+      <xs:documentation xml:lang="en">Cropping year</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="CroppingStart" type="xs:date">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">作付開始日</xs:documentation>
+      <xs:documentation xml:lang="en">Start date of cropping term</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="CroppingEnd" type="xs:date">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">作付終了日</xs:documentation>
+      <xs:documentation xml:lang="en">End date of cropping term</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="CroppingArea" type="areaType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">作付面積</xs:documentation>
+      <xs:documentation xml:lang="en">Cropping area</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="Yield10a" type="yieldPerAreaType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">反収</xs:documentation>
+      <xs:documentation xml:lang="en">Yield value per 10a</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="Yield" type="yieldType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">収量</xs:documentation>
+      <xs:documentation xml:lang="en">Yield value</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="DeptName" type="nameType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">作付（栽培）部門名</xs:documentation>
+      <xs:documentation xml:lang="en">Department name of cropping</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+
+  <!--作業マスタ情報:Workの子要素-->
+  <!--xs:element name="WorkID" type="xs:positiveInteger"-->
+  <xs:element name="WorkID" type="positiveCodeType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">作業コード（正整数）：作物（CropID）ごとに定義される作業の整数値識別コード，作物ごとにユニーク</xs:documentation>
+      <xs:documentation xml:lang="en">Positive numeric identifier of farm work which depends on crop</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="WorkCode" type="stringCodeType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">作業コード（文字列）：作物（CropID）ごとに定義される作業の文字列識別コード，作物ごとにユニーク</xs:documentation>
+      <xs:documentation xml:lang="en">String coded identifier of farm work which depends on crop</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="WorkName" type="nameType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">作業名</xs:documentation>
+      <xs:documentation xml:lang="en">Name of farm work</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="ProduceWorkFlag" type="xs:boolean" default="false">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">圃場でなくロットを対象とした作業か？（真の場合はロット作業）</xs:documentation>
+      <xs:documentation xml:lang="en">Logical flag whether the farm work is for production process</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+
+  <!--作業情報：WorkProcessの子要素-->
+  <xs:element name="WorkNo" type="xs:positiveInteger">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">作業識別番号（連番値：正整数）：作業繰り返し等を識別するための管理用番号（PMS内部処理用：ユーザは通常意識する必要は無い）</xs:documentation>
+      <xs:documentation xml:lang="en">Positive numerical identifier of farm work record</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="WorkDate" type="xs:date">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">作業日（日付型）</xs:documentation>
+      <xs:documentation xml:lang="en">Date on farm work is done (started)</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="WorkDateEnd" type="xs:date">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">作業終了日（日付型）</xs:documentation>
+      <xs:documentation xml:lang="en">Date on farm work is finished</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="WorkTime" type="durationType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">作業時間（所要時間），単位は分（値は整数値となる）</xs:documentation>
+      <xs:documentation xml:lang="en">Elapsed time of farm work in minutes</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="StartTime" type="xs:dateTime">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">作業開始日時（日時型）</xs:documentation>
+      <xs:documentation xml:lang="en">Time on the farm work started</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="EndTime" type="xs:dateTime">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">作業終了日時（日時型）</xs:documentation>
+      <xs:documentation xml:lang="en">Time on the farm work finished</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="WorkArea" type="areaType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">作業面積（実際に作業できた面積）</xs:documentation>
+      <xs:documentation xml:lang="en">Processed area of farm work</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="AmountPerArea" type="amountPerAreaType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">資材の反当（10アール当たり）使用量</xs:documentation>
+      <xs:documentation xml:lang="en">Amount of planting material used in each 10a area</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="Ratio" type="ratioType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">資材の希釈倍率：反当使用量×希釈倍率×散布面積が実際の散布総量となる（単位換算は別途必要）</xs:documentation>
+      <xs:documentation xml:lang="en">Dilution rate of applied material</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="ApplyArea" type="areaType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">散布面積</xs:documentation>
+      <xs:documentation xml:lang="en">Applied area of materials</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="AmountTotal" type="amountType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">実散布量（散布総量）</xs:documentation>
+      <xs:documentation xml:lang="en">Total applied amount of diluted material</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="LotNo" type="xs:positiveInteger" nillable="true">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">ロット作業の場合はそのロット番号（圃場作業の場合は0またはNull）</xs:documentation>
+      <xs:documentation xml:lang="en">Lot number of production process</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="WorkType" type="workTypeNumberType" default="2">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">作業データの種別（0:当初計画，1:実行計画，2:実績），既定は2:実績で特にしていない場合は作業実績レコードと見なす！ added on 20-Jul-2012 by D.J.</xs:documentation>
+      <xs:documentation xml:lang="en">Number indicating the work record type from 0 to 2: 0 is first plan, 1 is execution plan and 2 is work result</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="WorkDetail" type="xs:normalizedString">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja"></xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="WorkKindID" type="positiveCodeType"/>
+  <xs:element name="WorkKindCode" type="stringCodeType"/>
+  <xs:element name="WorkKind" type="nameType"/>
+  <xs:element name="WorkEfficiency" type="xs:double"/>
+  <xs:element name="RainFallLimit" type="xs:double"/>
+
+  <!--機材情報：Machineの子要素-->
+  <!--xs:element name="MachineKindID" type="xs:positiveInteger"-->
+  <xs:element name="MachineKindID" type="positiveCodeType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">機材種別コード（正整数）：機材の種類を識別するコード番号</xs:documentation>
+      <xs:documentation xml:lang="en">Positive numeric identifier of machine kind</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="MachineKindCode" type="stringCodeType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">機材種別コード（文字列）：機材種別を表すコード文字列</xs:documentation>
+      <xs:documentation xml:lang="en">String coded identifier of machine kind</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="MachineKind" type="nameType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">機材種別名</xs:documentation>
+      <xs:documentation xml:lang="en">Name of machine kind</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <!--xs:element name="MachineID" type="xs:positiveInteger"-->
+  <xs:element name="MachineID" type="positiveCodeType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">機材コード（正整数）：機材個体を識別するコード番号，機材種別コードとペアで機材を特定する（キー），機材コードは機材種別依存で機材種別ごとにユニーク</xs:documentation>
+      <xs:documentation xml:lang="en">Positive numeric identifier of machine and tool</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="MachineCode" type="stringCodeType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">機材コード（正整数）：機材個体を識別するコード番号，機材種別コードとペアで機材を特定する（キー），機材コードは機材種別依存で機材種別ごとにユニーク</xs:documentation>
+      <xs:documentation xml:lang="en">String coded identifier of machine and tool</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="MachineName" type="longNameType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">機材名</xs:documentation>
+      <xs:documentation xml:lang="en">Name of machine and tool</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="NumOfOperator" type="numOfPersonType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">操作人数</xs:documentation>
+      <xs:documentation xml:lang="en">Number of operator necessary to drive machine and tool</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="Performance" type="performanceType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">作業能力・能率</xs:documentation>
+      <xs:documentation xml:lang="en">Work performance of machine and tool</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="OwnFlag" type="xs:boolean">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">自己所有か否か</xs:documentation>
+      <xs:documentation xml:lang="en">Logical flag value indicating whether the machine is owned or not</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="DieselFuelFlag" type="xs:boolean">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">ディーゼル燃料か否か</xs:documentation>
+      <xs:documentation xml:lang="en">Logical flag value indicating whether fuel of machine is diesel fuel or not</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="PurchaseDate" type="xs:date">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">購入日</xs:documentation>
+      <xs:documentation xml:lang="en">Purchase date</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="PurchaseCost" type="priceType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">購入価格（費用）</xs:documentation>
+      <xs:documentation xml:lang="en">Purchase cost</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="ServiceYear" type="xs:positiveInteger">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">耐用年数</xs:documentation>
+      <xs:documentation xml:lang="en">Expected life time represented by year (durable years)</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="ServiceHour" type="xs:positiveInteger">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">耐用時間</xs:documentation>
+      <xs:documentation xml:lang="en">Expected life time represented by hour (durable hours)</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+
+  <xs:element name="FuelTypeCode" type="stringCodeType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">燃料種類コード</xs:documentation>
+      <xs:documentation xml:lang="en">Code for fuel kind</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="FuelUnitCode" type="stringCodeType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">燃料使用量単位コード</xs:documentation>
+      <xs:documentation xml:lang="en">Code for amount of fuel consumption</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="FuelConsumptionRate" type="xs:double">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">燃料消費率（時間当たり消費量）</xs:documentation>
+      <xs:documentation xml:lang="en">Fuel consumption rate per hour</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="NationalStandardPrice" type="priceType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">全国標準価格</xs:documentation>
+      <xs:documentation xml:lang="en">Domestic average price</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="StandardPrice" type="priceType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">標準価格</xs:documentation>
+      <xs:documentation xml:lang="en">Standard(average) price</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="PerfomanceModel" type="xs:normalizedString">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">性能・型式</xs:documentation>
+      <xs:documentation xml:lang="en">Description of performance, model and type</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="UnitClassificationCode" type="stringCodeType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">利用単位区分コード</xs:documentation>
+      <xs:documentation xml:lang="en">Code for usage category</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+
+  <xs:element name="UsingRate" type="xs:double">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">使用割合</xs:documentation>
+      <xs:documentation xml:lang="en">Usage rate</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+
+  <xs:element name="RemainingPercentage" type="xs:double">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">残存率(%)</xs:documentation>
+      <xs:documentation xml:lang="en">Ratio of remained value</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="RepairCoefficient" type="xs:double">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">修理係数(%)</xs:documentation>
+      <xs:documentation xml:lang="en">Coefficient of repairment</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="GarageCoefficient" type="xs:double">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">車庫係数(%)</xs:documentation>
+      <xs:documentation xml:lang="en">Coefficient of garage in</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="CapitalInterestInsuranceFee" type="xs:double">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">資本利子保険料率(%)</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+
+  <!-- 施設情報：Facilityの子要素 -->
+  <xs:element name="FacilityKindID" type="positiveCodeType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">機材種別コード（正整数）：機材の種類を識別するコード番号</xs:documentation>
+      <xs:documentation xml:lang="en">Positive numeric identifier of machine kind</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="FacilityKindCode" type="stringCodeType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">機材種別コード（文字列）：機材種別を表すコード文字列</xs:documentation>
+      <xs:documentation xml:lang="en">String coded identifier of machine kind</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="FacilityKind" type="nameType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">機材種別名</xs:documentation>
+      <xs:documentation xml:lang="en">Name of machine kind</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="FacilityID" type="positiveCodeType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">機材コード（正整数）：機材個体を識別するコード番号，機材種別コードとペアで機材を特定する（キー），機材コードは機材種別依存で機材種別ごとにユニーク</xs:documentation>
+      <xs:documentation xml:lang="en">Positive numeric identifier of machine and tool</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="FacilityCode" type="stringCodeType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">機材コード（正整数）：機材個体を識別するコード番号，機材種別コードとペアで機材を特定する（キー），機材コードは機材種別依存で機材種別ごとにユニーク</xs:documentation>
+      <xs:documentation xml:lang="en">String coded identifier of machine and tool</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="FacilityName" type="nameType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">機材名</xs:documentation>
+      <xs:documentation xml:lang="en">Name of machine and tool</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  
+  <!-- 施設使用情報：FacilityUsageの子要素 -->
+  <xs:element name="UsingDate" type="xs:date">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">施設使用（開始）日（日付型）</xs:documentation>
+      <xs:documentation xml:lang="en">Date on facility is used (started operation)</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="UsingDateEnd" type="xs:date">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">施設使用終了日（日付型）</xs:documentation>
+      <xs:documentation xml:lang="en">Date on facility use is finished</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="UsingQuantity" type="amountType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">使用数量（数量型，単位指定あり）</xs:documentation>
+      <xs:documentation xml:lang="en">Generic amount expression with unit string</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="UsingTime" type="durationType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">使用時間（時間型，単位指定あり）</xs:documentation>
+      <xs:documentation xml:lang="en">Generic time expression with unit string</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="UsingYears" type="xs:nonNegativeInteger">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">使用年数</xs:documentation>
+      <xs:documentation xml:lang="en">Years under usage</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <!-- xs:element name="FacilityUseCoefficients">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">36旬毎の利用状況</xs:documentation>
+      <xs:documentation xml:lang="en">Usage count in each 10 days</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="By10Days" type="xs:integer" minOccurs="0" maxOccurs="36">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">旬別の利用頻度数？</xs:documentation>
+            <xs:documentation xml:lang="en">Usage count in 10 days</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element -->
+
+  <!--資材情報：Materialの子要素-->
+  <!--xs:element name="MaterialKindID" type="xs:positiveInteger"-->
+  <xs:element name="MaterialKindID" type="positiveCodeType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">資材種別コード（正整数）：資材の種類を識別するコード番号，肥料は"9999"，農薬は"9998"で固定（予約），その他の資材は任意（ユーザ指定）</xs:documentation>
+      <xs:documentation xml:lang="en">Positive numeric identifier of material kind</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="MaterialKindCode" type="stringCodeType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">資材種別コード（文字列）</xs:documentation>
+      <xs:documentation xml:lang="en">String coded identifier of material kind</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="MaterialKind" type="nameType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">資材種別名称</xs:documentation>
+      <xs:documentation xml:lang="en">Name of material kind</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <!--xs:element name="MaterialID" type="xs:positiveInteger"-->
+  <xs:element name="MaterialID" type="positiveCodeType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">資材コード（正整数）：資材（肥料・農薬含む）を識別するコード番号，種別コードとペアで資材を特定する（キー），資材コードは資材種別依存で資材種別ごとにユニーク</xs:documentation>
+      <xs:documentation xml:lang="en">Positive numeric identifier of material</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="MaterialCode" type="stringCodeType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">資材コード（文字列）</xs:documentation>
+      <xs:documentation xml:lang="en">String coded identifier of material</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="MaterialName" type="longNameType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">資材名称</xs:documentation>
+      <xs:documentation xml:lang="en">Name of material</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="FormAmount" type="amountType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">一荷姿当たりの重量・容量：荷姿単位の使用量を重量・容量単位の使用量に変換する際の乗数として使用される（その逆もあり）</xs:documentation>
+      <xs:documentation xml:lang="en">Amount of a bundle of material</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="AmountUnit" type="unitStringType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">重量・容量の単位文字（kg，L，など）</xs:documentation>
+      <xs:documentation xml:lang="en">Unit string of material amount</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="FormPrice" type="priceType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">一荷姿当たりの価格（仕入れ単価，入庫単価）</xs:documentation>
+      <xs:documentation xml:lang="en">Price of a bundle of material at stocking (buy-in)</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="FormUnit" type="unitStringType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">荷姿の単位文字（袋，本，瓶など）</xs:documentation>
+      <xs:documentation xml:lang="en">Unit string of bundle of material</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <!--xs:element name="SupplierID" type="xs:positiveInteger"-->
+  <xs:element name="SupplierID" type="positiveCodeType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">資材仕入れ先（購入先）のPersonID</xs:documentation>
+      <xs:documentation xml:lang="en">Positive numeric identifier of material supplier defined in member element</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="SupplierCode" type="stringCodeType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">資材仕入れ先（購入先）のPersonCode</xs:documentation>
+      <xs:documentation xml:lang="en">String coded identifier of material supplier defined in member element</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="StockPrice" type="priceType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">資材在庫単価</xs:documentation>
+      <xs:documentation xml:lang="en">Price of a bundle of material in stock (stock price of bundle)</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="ShipPrice" type="priceType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">資材出庫単価</xs:documentation>
+      <xs:documentation xml:lang="en">Price of a bundle of material at shipping ( delivery | leaving stock )</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="BrandGrade" type="xs:normalizedString">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">資材の銘柄・等級など</xs:documentation>
+      <xs:documentation xml:lang="en">Brand and grade of material</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="ExpenseItemCode" type="stringCodeType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">費用項目（科目）コード</xs:documentation>
+      <xs:documentation xml:lang="en">Code of expense item</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="Fee" type="priceType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">手数料</xs:documentation>
+      <xs:documentation xml:lang="en">Fee of handling charge</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="Standard" type="xs:normalizedString">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">標準規格</xs:documentation>
+      <xs:documentation xml:lang="en">Regurated standard</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="AmountUnitCode" type="stringCodeType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">資材使用量単位コード</xs:documentation>
+      <xs:documentation xml:lang="en">Code for amount of material usage</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+
+  <!--肥料・農薬の資材拡張子要素-->
+  <xs:element name="FertilizerComponent">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">資材を拡張する肥料独自のマスタ情報：肥料成分構成値など</xs:documentation>
+      <xs:documentation xml:lang="ja">データ型を変更して単位文字列を追加 on 09-May-2015 by D.J.</xs:documentation>
+      <xs:documentation xml:lang="en">Fertilizer information extending material one</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="N" type="ingredientWeightPercentType" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">窒素成分含量（重量百分率）</xs:documentation>
+            <xs:documentation xml:lang="en">Nitrogen content in weight percent</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="P" type="ingredientWeightPercentType" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">リン成分含量（重量百分率）</xs:documentation>
+            <xs:documentation xml:lang="en">Phosphorus content in weight percent</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="K" type="ingredientWeightPercentType" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">カリ成分含量（重量百分率）</xs:documentation>
+            <xs:documentation xml:lang="en">Potassium content in weight percent</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="Ca" type="ingredientWeightPercentType" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">カルシウム成分含量（重量百分率）</xs:documentation>
+            <xs:documentation xml:lang="en">Calcium in weight percent</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="Mg" type="ingredientWeightPercentType" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">マグネシウム成分含量（重量百分率）</xs:documentation>
+            <xs:documentation xml:lang="en">Magnesium content in weight percent</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="S" type="ingredientWeightPercentType" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">硫黄成分含量（重量百分率）</xs:documentation>
+            <xs:documentation xml:lang="en">Sulfur content in weight percent</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="Mn" type="ingredientWeightPercentType" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">マンガン成分含量（重量百分率）</xs:documentation>
+            <xs:documentation xml:lang="en">Manganese content in weight percent</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="B" type="ingredientWeightPercentType" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">ホウ素成分含量（重量百分率）</xs:documentation>
+            <xs:documentation xml:lang="en">Boron content in weight percent</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="Fe" type="ingredientWeightPercentType" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">鉄成分含量（重量百分率）</xs:documentation>
+            <xs:documentation xml:lang="en">Iron content in weight percent</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="Cu" type="ingredientWeightPercentType" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">銅成分含量（重量百分率）</xs:documentation>
+            <xs:documentation xml:lang="en">Copper content in weight percent</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="Zn" type="ingredientWeightPercentType" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">亜鉛成分含量（重量百分率）</xs:documentation>
+            <xs:documentation xml:lang="en">Zinc content in weight percent</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="Cl" type="ingredientWeightPercentType" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">塩素成分含量（重量百分率）</xs:documentation>
+            <xs:documentation xml:lang="en">Chlorine content in weight percent</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="Mo" type="ingredientWeightPercentType" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">モリブデン成分含量（重量百分率）</xs:documentation>
+            <xs:documentation xml:lang="en">Molybdenum content in weight percent</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="Si" type="ingredientWeightPercentType" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">ケイ素成分含量（重量百分率）</xs:documentation>
+            <xs:documentation xml:lang="en">Silicon content in weight percent</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="RegisteredChemical">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">資材を拡張する農薬独自のマスタ情報：農薬登録情報など</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="RegNo" type="xs:positiveInteger">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">農薬登録番号（農薬取締法に基づく）</xs:documentation>
+            <xs:documentation xml:lang="en">Registered number of agricultural chemical according to the domestic reguration law</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="RegName" type="xs:normalizedString" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">農薬登録名</xs:documentation>
+            <xs:documentation xml:lang="en">Register name of agricultural chemical</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="Kind" type="xs:normalizedString" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">種別</xs:documentation>
+            <xs:documentation xml:lang="en">Kind of agric. chemical</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="Maker" type="xs:normalizedString" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">メーカ名</xs:documentation>
+            <xs:documentation xml:lang="en">Manufacturer of agric. chemical</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="Ingredient" type="xs:normalizedString" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">農薬成分</xs:documentation>
+            <xs:documentation xml:lang="en">Ingredient of agric. chemical</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="Usage" type="xs:normalizedString" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">用途</xs:documentation>
+            <xs:documentation xml:lang="en">Usage of agric. chemical</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="Type" type="xs:normalizedString" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">剤形</xs:documentation>
+            <xs:documentation xml:lang="en">Type of agric. chemical</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="Application" type="xs:normalizedString" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">適用</xs:documentation>
+            <xs:documentation xml:lang="en">Application of agric. chemical</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <!--生育情報関係-->
+  <xs:element name="ItemCode" type="xs:nonNegativeInteger">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">ユーザ定義型データの項目ID値（非負値：0以上の整数）</xs:documentation>
+      <xs:documentation xml:lang="en">Non-negative numeric identifier of user defined data item</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <!-- added on 17-Nov-2011 by D.J. -->
+  <xs:element name="ItemName" type="nameType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">ユーザ定義型データ項目名</xs:documentation>
+      <xs:documentation xml:lang="en">Data item name of user defined data</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="NumericValue" type="numericValueWithUnitType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">数値データ</xs:documentation>
+      <xs:documentation xml:lang="en">Data item with numeric value</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="DataCode" type="xs:nonNegativeInteger">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">データコード</xs:documentation>
+      <xs:documentation xml:lang="en">Data code of user defined data</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <!-- added on 17-Nov-2011 by D.J. -->
+  <xs:element name="DataName" type="nameType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">データ識別名・データ名称</xs:documentation>
+      <xs:documentation xml:lang="en">Name of data item</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="DataType" type="dataTypeStringType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">データ型記述子（1文字）</xs:documentation>
+      <xs:documentation xml:lang="en">Data type identifier</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="UnitString" type="unitStringType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">単位文字列</xs:documentation>
+      <xs:documentation xml:lang="en">Unit string of the data item</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="ValueString" type="xs:normalizedString">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">文字列表現された数値データ</xs:documentation>
+      <xs:documentation xml:lang="en">String coded value of user defined data item</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="BinaryString" type="binaryStringType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">バイナリデータ</xs:documentation>
+      <xs:documentation xml:lang="en">Binary data of user defined data item</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+
+  <xs:element name="RecDate" type="xs:dateTime">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">データ記録日（計測日，生成日，登録日など）</xs:documentation>
+      <xs:documentation xml:lang="en">Date on data recorded</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <!-- changed 'date' to 'dateTime' on 04-Jul-2012 by D.J. -->
+  <xs:element name="ProductYear" type="yearType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">生産年（西暦年）</xs:documentation>
+      <xs:documentation xml:lang="en">Year on product was produced</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="ProductArea" type="areaType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">生産面積</xs:documentation>
+      <xs:documentation xml:lang="en">Area of product</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="ProductYield" type="yieldType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">生産量（収量）</xs:documentation>
+      <xs:documentation xml:lang="en">Gross yield of product</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+
+  <!--出荷荷姿情報の子要素-->
+  <!--xs:element name="FormID" type="xs:positiveInteger"/-->
+  <xs:element name="FormID" type="positiveCodeType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">荷姿情報識別コード（整数値）</xs:documentation>
+      <xs:documentation xml:lang="en">Positive numeric identifier of packaging style of materials and products</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="FormCode" type="stringCodeType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">荷姿情報識別コード（文字列）</xs:documentation>
+      <xs:documentation xml:lang="en">String coded identifier of packaging style of materials and products</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="FormName" type="nameType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">荷姿識別名</xs:documentation>
+      <xs:documentation xml:lang="en">Name of packaging style</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="Capacity" type="amountType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">荷姿容量</xs:documentation>
+      <xs:documentation xml:lang="en">Capasity of package</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+
+  <!--生産出荷関係の子要素-->
+  <!--xs:element name="ProductID" type="xs:positiveInteger"/-->
+  <xs:element name="ProductID" type="positiveCodeType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">生産品識別コード（整数値）</xs:documentation>
+      <xs:documentation xml:lang="en">Positive numeric identifier of product</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="ProductCode" type="stringCodeType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">生産品識別コード（文字列）</xs:documentation>
+      <xs:documentation xml:lang="en">String coded identifier of product</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="ProductName" type="nameType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">生産品名</xs:documentation>
+      <xs:documentation xml:lang="en">Product name</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="FromField" type="xs:positiveInteger">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">生産品の由来圃場番号</xs:documentation>
+      <xs:documentation xml:lang="en">Positive numeric identifier of source field of product</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="FromLot" type="xs:positiveInteger">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">生産品の由来ロット番号</xs:documentation>
+      <xs:documentation xml:lang="en">Positive numeric identifier of source lot of product</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="ProductDate" type="xs:date">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">生産日</xs:documentation>
+      <xs:documentation xml:lang="en">Date on the product is produced</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="UnitPrice" type="priceType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">生産品の単価</xs:documentation>
+      <xs:documentation xml:lang="en">Unit price of product</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="ProductCount" type="xs:nonNegativeInteger">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">生産品の生産数</xs:documentation>
+      <xs:documentation xml:lang="en">Number of product produced</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="TotalPrice" type="priceType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">生産品総額：単価×生産数</xs:documentation>
+      <xs:documentation xml:lang="en">Gross price of product : unit price * number of product</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="ShipDate" type="xs:date">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">生産品の出荷日</xs:documentation>
+      <xs:documentation xml:lang="en">Shipping date of product</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <!--xs:element name="CustomerID" type="xs:positiveInteger"/-->
+  <xs:element name="CustomerID" type="positiveCodeType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">顧客識別コード（整数値）</xs:documentation>
+      <xs:documentation xml:lang="en">Positive numeric identifier of customer of product</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="CustomerCode" type="stringCodeType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">顧客識別コード（文字列）</xs:documentation>
+      <xs:documentation xml:lang="en">String coded identifier of customer of product</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="CustomerName" type="nameType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">顧客名</xs:documentation>
+      <xs:documentation xml:lang="en">Customer name</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+
+</xs:schema>

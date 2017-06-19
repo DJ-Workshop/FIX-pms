@@ -1,0 +1,130 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            attributeFormDefault="unqualified"
+            elementFormDefault="qualified"
+            finalDefault="#all"
+            blockDefault="#all"
+            targetNamespace="http://naro.narc.fmd.go.jp/bfd/Working"
+            xmlns:bfdw="http://naro.narc.fmd.go.jp/bfd/Working"
+            xmlns:bfdel="http://naro.narc.fmd.go.jp/bfd/Element"
+            xmlns:bfdtr="http://naro.narc.fmd.go.jp/bfd/TypeRestriction"
+            >
+
+  <!--外部スキーマの取り込み-->
+  <xsd:import namespace="http://naro.narc.fmd.go.jp/bfd/Element" schemaLocation="bfd_Element.xsd" />
+  <xsd:import namespace="http://naro.narc.fmd.go.jp/bfd/TypeRestriction" schemaLocation="bfd_Type.xsd" />
+
+  <!--スキーマ情報-->
+  <xsd:annotation>
+    <xsd:appinfo>
+      Scheme Version 1.00
+    </xsd:appinfo>
+    <xsd:documentation>
+      農作業群用のXMLスキーマ
+    </xsd:documentation>
+  </xsd:annotation>
+
+  <!--農作業群のルート要素宣言-->
+  <xsd:element name="Workingses">
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element ref="bfdw:Workings" minOccurs="1" maxOccurs="unbounded" />
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+
+  <!--農作業群の要素宣言-->
+  <xsd:element name="Workings">
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element ref="bfdel:MIndexID" minOccurs="0" maxOccurs="1">
+          <xsd:annotation>
+            <xsd:documentation>
+              経営指標要素を参照するための外部キー
+              共通要素スキーマから参照
+            </xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+        <xsd:element ref="bfdw:Working" minOccurs="1" maxOccurs="unbounded" />
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+
+  <!--農作業の要素宣言-->
+  <xsd:element name="Working">
+    <xsd:complexType>
+      <xsd:sequence>
+        <!--農作業のサブ要素の参照-->
+        <xsd:element ref="bfdw:WorkingName" minOccurs="1" maxOccurs="1"  />
+        <xsd:element ref="bfdw:WorkingArea"  minOccurs="1" maxOccurs="1" />
+        <xsd:group ref="bfdw:GroupWorkingTime" minOccurs="1" maxOccurs="1" />
+        <xsd:group ref="bfdw:GroupWorkingTendays" minOccurs="1" maxOccurs="1" />
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+
+  <!--対象作業の作業時間のモデルグループ-->
+  <xsd:group name="GroupWorkingTime">
+    <xsd:sequence>
+      <xsd:element ref="bfdw:WorkingTime_h" />
+      <xsd:element ref="bfdw:WorkingTime_m" />
+    </xsd:sequence>
+  </xsd:group>
+
+  <!--対象作業の旬日期間のモデルグループ-->
+  <xsd:group name="GroupWorkingTendays">
+    <xsd:sequence>
+      <xsd:element ref="bfdw:WorkingTendaysStart" />
+      <xsd:element ref="bfdw:WorkingTendaysEnd" />
+    </xsd:sequence>
+  </xsd:group>
+
+  <!--農作業のサブ項目の要素宣言-->
+  <xsd:element name="WorkingName" type="xsd:string">
+    <xsd:annotation>
+      <xsd:documentation>
+        作業名（作業の旬が連続する場合でも、旬で作業時間が異なる場合は別レコードとする）
+      </xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="WorkingArea" type="xsd:integer" default="10">
+    <xsd:annotation>
+      <xsd:documentation>
+        10a当たり作業時間の計算に使用する面積（a）、初期値は10a
+      </xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="WorkingTime_h" type="xsd:decimal" default="0">
+    <xsd:annotation>
+      <xsd:documentation>
+        上記の面積の作業時間（時間）、初期値0
+        入力例；1時間30分を時間表記のみの1.5時間として、1.5の入力も可
+      </xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="WorkingTime_m" type="xsd:integer" default="0">
+    <xsd:annotation>
+      <xsd:documentation>
+        上記の面積の作業時間（分）、初期値0
+        入力例；1時間30分を分表記のみの90分時間として、90の入力も可
+      </xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="WorkingTendaysStart" type="bfdtr:TypeTendays" default="1.1">
+    <xsd:annotation>
+      <xsd:documentation>
+        対象作業の開始旬、初期値1.1
+        TendaysのXMLファイルを参照する外部キー
+      </xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="WorkingTendaysEnd" type="bfdtr:TypeTendays" default="12.3">
+    <xsd:annotation>
+      <xsd:documentation>
+        対象作業の修了旬、初期値12.3
+        TendaysのXMLファイルを参照する外部キー
+      </xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+
+</xsd:schema>

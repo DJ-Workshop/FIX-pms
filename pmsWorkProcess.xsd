@@ -1,0 +1,435 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+  FIX-pms スキーマ
+  【作業データ】
+	Version 1.0.0.1 on 21-Jul-2011 by D.J.
+	Version 1.0.0.2 on 05-Oct-2011 by D.J.
+	Version 1.0.2.1 on 20-Jul-2012 by D.J.
+  Version 1.0.2.2 on 13-Jan-2014 by D.J.　－－－　型～要素定義整理（冗長定義削除）
+	Version 1.0.4.1 on 08-Jun-2015 by D.J.
+  ======================================
+  Version 1.1.0.0 on 31-Dec-2015 by D.J.　・・・　技術体系DBインタフェイス，一次加工流通出荷インタフェイス，NARC経営指標インタフェイス対応
+  Version 1.1.1.0 on 17-Jan-2016 by D.J.  ・・・　技術体系DBインタフェイス調整に伴うスキーマ仕様更新
+  Version 1.1.2.0 on 22-Jan-2016 by D.J.　・・・　　　　〃
+-->
+
+<xs:schema targetNamespace="http://www.aginfo.jp/PMS/FIX-pms/XMLSchema"
+    elementFormDefault="qualified"
+    xmlns="http://www.aginfo.jp/PMS/FIX-pms/XMLSchema"
+    xmlns:fp="http://www.aginfo.jp/PMS/FIX-pms/XMLSchema"
+    xmlns:gpx="http://www.topografix.com/GPX/1/1"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+>
+  <xs:import namespace="http://www.topografix.com/GPX/1/1" schemaLocation="./gpx.xsd"/>
+  <xs:include schemaLocation="./pmsCommon.xsd"/>
+  <xs:include schemaLocation="./pmsMaster.xsd"/>
+
+	<!--作業軌跡要素-->
+	<xs:element name="TrackData">
+		<xs:annotation>
+			<xs:documentation xml:lang="ja">圃場（区画）内作業軌跡・詳細地点データを GPXX1.1 で格納します</xs:documentation>
+		</xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="gpx:gpx" maxOccurs="unbounded"/>
+      </xs:sequence>
+      <xs:attributeGroup ref="acls">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">この要素のアクセス権情報を保持します。</xs:documentation>
+          <xs:documentation xml:lang="en">Store access control designator of this element</xs:documentation>
+        </xs:annotation>
+      </xs:attributeGroup>
+    </xs:complexType>
+  </xs:element>
+
+  <!--作業リソース-->
+  <xs:element name="WorkerUsage">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">作業者の作業状況（時間・面積など）情報要素です</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="WorkerID" minOccurs="0"/>
+        <xs:element ref="WorkerCode" minOccurs="0"/>
+        <xs:element ref="WorkerName" minOccurs="0"/>
+        <xs:element ref="WorkTime"/>
+        <xs:element ref="StartTime" minOccurs="0"/>
+        <xs:element ref="EndTime" minOccurs="0"/>
+        <xs:element ref="WorkArea" minOccurs="0"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="WorkerUsages">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">作業者使用状況リスト要素</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="WorkerUsage" maxOccurs="unbounded" />
+      </xs:sequence>
+      <xs:attributeGroup ref="acls">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">この要素のアクセス権情報を保持します。</xs:documentation>
+          <xs:documentation xml:lang="en">Store access control designator of this element</xs:documentation>
+        </xs:annotation>
+      </xs:attributeGroup>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="MachineUsage">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">機材使用情報要素です</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="MachineKindID" minOccurs="0"/>
+        <xs:element ref="MachineKindCode" minOccurs="0"/>
+        <xs:element ref="MachineKind" minOccurs="0"/>
+        <xs:element ref="MachineID" minOccurs="0"/>
+        <xs:element ref="MachineCode" minOccurs="0"/>
+        <xs:element ref="MachineName" minOccurs="0"/>
+        <xs:element ref="WorkTime"/>
+        <xs:element ref="StartTime" minOccurs="0"/>
+        <xs:element ref="EndTime" minOccurs="0"/>
+        <xs:element ref="WorkArea" minOccurs="0"/>
+        <!-- Following items are for fuel consumption for FSDB xml interface -->
+        <xs:element ref="AmountPerArea" minOccurs="0"/>
+        <xs:element ref="Ratio" minOccurs="0"/>
+        <xs:element ref="ApplyArea" minOccurs="0"/>
+        <xs:element ref="AmountTotal" minOccurs="0"/>
+        <xs:element name="ConsumedAmountPerTime" type="xs:double" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">時間燃料消費量</xs:documentation>
+            <xs:documentation xml:lang="en">Amount of fuel consumption per a hour</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="TimeIntegrationMethod" type="xs:normalizedString" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">時間積算方法</xs:documentation>
+            <xs:documentation xml:lang="en">Method of time accumulation</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="MachineUsages">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">機材使用情報リスト要素です</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="MachineUsage" maxOccurs="unbounded" />
+      </xs:sequence>
+      <xs:attributeGroup ref="acls">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">この要素のアクセス権情報を保持します。</xs:documentation>
+          <xs:documentation xml:lang="en">Store access control designator of this element</xs:documentation>
+        </xs:annotation>
+      </xs:attributeGroup>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="MaterialUsage">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">資材使用情報要素です</xs:documentation>
+      <xs:documentation xml:lang="en">Stores material usage information</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="MaterialKindID" minOccurs="0"/>
+        <xs:element ref="MaterialKindCode" minOccurs="0"/>
+        <xs:element ref="MaterialKind" minOccurs="0"/>
+        <xs:element ref="MaterialID" minOccurs="0"/>
+        <xs:element ref="MaterialCode" minOccurs="0"/>
+        <xs:element ref="MaterialName" minOccurs="0"/>
+        <xs:element ref="AmountPerArea"/>
+        <xs:element ref="Ratio" minOccurs="0"/>
+        <xs:element ref="ApplyArea" minOccurs="0"/>
+        <xs:element ref="AmountTotal" minOccurs="0"/>
+        <!-- FSDB interface extensions -->
+        <xs:element name="ExpenseItemName" type="xs:normalizedString" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">費目名</xs:documentation>
+            <xs:documentation xml:lang="en">Expense item name</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="ExpenseTypeCode" type="stringCodeType" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">費目種別コード</xs:documentation>
+            <xs:documentation xml:lang="en">String coded identifier of expense item</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="Used10DaysCode" type="stringCodeType" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">費目使用された旬コード（1～36）</xs:documentation>
+            <xs:documentation xml:lang="en">String coded identifier of 10 days in year when the expense used</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="UnitExpenses" type="unitCostType" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">費用単価</xs:documentation>
+            <xs:documentation xml:lang="en">Unit cost of expense</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element ref="UsingQuantity" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">使用数量</xs:documentation>
+            <xs:documentation xml:lang="en">Amount of material usage</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element ref="UsingYears" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">使用年数（有効年数）</xs:documentation>
+            <xs:documentation xml:lang="en">Valid years</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="MaterialUsages">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">資材使用情報リスト要素です</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="MaterialUsage" maxOccurs="unbounded" />
+      </xs:sequence>
+      <xs:attributeGroup ref="acls">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">この要素のアクセス権情報を保持します。</xs:documentation>
+          <xs:documentation xml:lang="en">Store access control designator of this element</xs:documentation>
+        </xs:annotation>
+      </xs:attributeGroup>
+    </xs:complexType>
+  </xs:element>
+
+  <!--単一作業型-->
+  <xs:complexType name="workProcessType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">「栽培作業」タイプを定義しています</xs:documentation>
+      <xs:documentation xml:lang="en">Defines data type of work process</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+			<!--圃場参照-->
+      <xs:element ref="FieldID" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">作業対象圃場の識別番号（圃場連番値）：Fields-Field要素で定義され，Cultivation要素で引用されているFieldIDをここでも引用して圃場を特定</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+			<xs:element ref="FieldCode" minOccurs="0"/>
+			<xs:element ref="FieldName" minOccurs="0"/>
+			<!--作付け参照-->
+      <xs:element ref="CroppingNo" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">作業対象の作付番号：Cultivations-Cultivation要素で定義されているCroppingNoを引用して作付番号を特定</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+			<xs:element ref="CroppingName" minOccurs="0"/>
+			<!--作物参照-->
+      <xs:element ref="CropID" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">作業対象の作物番号：FieldIDとCroppingNoが決まれば，Cultivation要素からFieldIDとCroppingNoで特定できる</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+			<xs:element ref="CropName" minOccurs="0"/>
+			<!--作業番号：シリアル値-->
+      <xs:element ref="WorkNo" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">作業連番値：PMS栽培作業台帳内での作業識別・管理用番号</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+			<!--作業名参照-->
+      <xs:element ref="WorkID" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">作業マスタWorks-Work要素で定義されている作業コード：このコードで作業マスタを参照して作業名などを取得できる</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+			<xs:element ref="WorkCode" minOccurs="0"/>
+			<xs:element ref="WorkName" minOccurs="0"/>
+			<!--作業日-->
+      <xs:element ref="WorkDate">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">作業日（日付型）</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="WorkDateEnd" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">作業終了日（日付型）</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="WorkTime">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">作業所要時間（分単位の正整数）</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="StartTime" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">作業開始日時（日時型）</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="EndTime" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">作業終了日時（日時型）</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="WorkArea" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">実際の作業面積（作業した面積）</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="WorkerUsage" minOccurs="0" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">作業者使用状況</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="MachineUsage" minOccurs="0" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">機材使用状況</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="MaterialUsage" minOccurs="0" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">資材（肥料・農薬含む）使用状況</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="LotNo" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">ロット作業の場合の対象ロット番号</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="Note" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">この作業に関する任意のメモ・備考（100文字以内）</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="TrackData" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">この作業の詳細作業軌跡データ：GPXX形式によるGPSトラックログと各地点での属性データセット</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="WorkType" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">この作業レコードの種別値，既定値は2:作業実績として処理する，added on 20-Jul-2012 by D.J.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <!-- FSDB xml interface extension -->
+      <xs:element ref="WorkDetail" minOccurs="0"/>
+      <xs:element ref="WorkKindID" minOccurs="0"/>
+      <xs:element ref="WorkKindCode" minOccurs="0"/>
+      <xs:element ref="WorkKind" minOccurs="0"/>
+      <xs:element ref="WorkEfficiency" minOccurs="0"/>
+      <xs:element ref="RainFallLimit" minOccurs="0"/>
+      <xs:element ref="Performance" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attributeGroup ref="acls">
+      <xs:annotation>
+        <xs:documentation xml:lang="ja">この要素のアクセス権情報を保持します。</xs:documentation>
+        <xs:documentation xml:lang="en">Store access control designator of this element</xs:documentation>
+      </xs:annotation>
+    </xs:attributeGroup>
+  </xs:complexType>
+  <!--単一作業要素-->
+	<xs:element name="WorkProcess" type="workProcessType">
+		<xs:annotation>
+			<xs:documentation xml:lang="ja">作業実績情報要素です（→ workProcessType型）</xs:documentation>
+      <xs:documentation xml:lang="en">Stores work process infromation</xs:documentation>
+		</xs:annotation>
+  </xs:element>
+
+	<!--作業群要素-->
+	<xs:element name="WorkProcesses">
+		<!--作業群型（作業型の任意数繰り返し）-->
+		<xs:annotation>
+			<xs:documentation xml:lang="ja">一連の作業情報を保持します（コンテナ要素）</xs:documentation>
+      <xs:documentation xml:lang="en">Contains multiple work process elements as container element</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+        <xs:element ref="WorkProcess" maxOccurs="unbounded">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">作業実績情報要素です（→ workProcessType型）</xs:documentation>
+            <xs:documentation xml:lang="en">Stores work process infromation</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+			</xs:sequence>
+			<xs:attributeGroup ref="acls">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">この要素のアクセス権情報を保持します。</xs:documentation>
+          <xs:documentation xml:lang="en">Store access control designator of this element</xs:documentation>
+        </xs:annotation>
+      </xs:attributeGroup>
+		</xs:complexType>
+	</xs:element>
+
+  <!-- 施設使用情報 -->
+  <xs:element name="FacilityUsage">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">施設使用情報を保持します</xs:documentation>
+      <xs:documentation xml:lang="en">Stores facility usage information</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <!--圃場参照-->
+        <xs:element ref="FieldID" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">作業対象圃場の識別番号（圃場連番値）：Fields-Field要素で定義され，Cultivation要素で引用されているFieldIDをここでも引用して圃場を特定</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element ref="FieldCode" minOccurs="0"/>
+        <xs:element ref="FieldName" minOccurs="0"/>
+        <!--作付け参照-->
+        <xs:element ref="CroppingNo" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">作業対象の作付番号：Cultivations-Cultivation要素で定義されているCroppingNoを引用して作付番号を特定</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element ref="CroppingName" minOccurs="0"/>
+        <!-- 施設参照 -->
+        <xs:element ref="FacilityKindID" minOccurs="0"/>
+        <xs:element ref="FacilityKindCode" minOccurs="0"/>
+        <xs:element ref="FacilityKind" minOccurs="0"/>
+        <xs:element ref="FacilityID" minOccurs="0"/>
+        <xs:element ref="FacilityCode" minOccurs="0"/>
+        <xs:element ref="FacilityName" minOccurs="0"/>
+        <!-- 使用担当者（作業者） -->
+        <xs:element ref="WorkerID" minOccurs="0"/>
+        <xs:element ref="WorkerCode" minOccurs="0"/>
+        <xs:element ref="WorkerName" minOccurs="0"/>
+        <!-- 使用状況 -->
+        <xs:element ref="UsingDate" minOccurs="0"/>
+        <xs:element ref="UsingDateEnd" minOccurs="0"/>
+        <xs:element ref="UsingQuantity" minOccurs="0"/>
+        <xs:element ref="UsingTime" minOccurs="0"/>
+        <xs:element ref="StartTime" minOccurs="0"/>
+        <xs:element ref="EndTime" minOccurs="0"/>
+        <!--xs:element ref="FacilityUseCoefficients" minOccurs="0"/  resigned -->
+      </xs:sequence>
+      <xs:attributeGroup ref="acls">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">この要素のアクセス権情報を保持します。</xs:documentation>
+          <xs:documentation xml:lang="en">Store access control designator of this element</xs:documentation>
+        </xs:annotation>
+      </xs:attributeGroup>
+    </xs:complexType>
+  </xs:element>
+  
+  <!-- 施設使用情報コンテナ -->
+  <xs:element name="FacilityUsages">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">一連の施設使用情報を保持します（コンテナ要素）</xs:documentation>
+      <xs:documentation xml:lang="en">Contains multiple facility usage elements as container element</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="FacilityUsage" maxOccurs="unbounded"/>
+      </xs:sequence>
+			<xs:attributeGroup ref="acls">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">この要素のアクセス権情報を保持します。</xs:documentation>
+          <xs:documentation xml:lang="en">Store access control designator of this element</xs:documentation>
+        </xs:annotation>
+      </xs:attributeGroup>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

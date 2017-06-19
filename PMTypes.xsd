@@ -1,0 +1,163 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- 25-May-2012 微修正：省力可能要素追加（minOccurs="0"），など -->
+<!-- 20-Jun-2012 微修正：ダイアグラム生成用に単純要素定義＆参照追加（実質構造変化なし）-->
+<xsd:schema id="PMTypes" targetNamespace="http://aginfo.jp/PFU/PMTypes/1/1" elementFormDefault="qualified" xmlns="http://aginfo.jp/PFU/PMTypes/1/1" xmlns:xsd="http://www.w3.org/2001/XMLSchema" version="1.1">
+	<!-- TypeString -->
+	<xsd:simpleType name="typeStringType">
+		<xsd:annotation>
+			<xsd:documentation>
+				1文字で規定されるデータ型文字を規定しています。
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="C">
+				<xsd:annotation>
+					<xsd:documentation>文字列型</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="N">
+				<xsd:annotation>
+					<xsd:documentation>整数型</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="F">
+				<xsd:annotation>
+					<xsd:documentation>浮動小数点型</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="D">
+				<xsd:annotation>
+					<xsd:documentation>日時型</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="L">
+				<xsd:annotation>
+					<xsd:documentation>論理型</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="S">
+				<xsd:annotation>
+					<xsd:documentation>選択肢型</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="U">
+				<xsd:annotation>
+					<xsd:documentation>URI型</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="I">
+				<xsd:annotation>
+					<xsd:documentation>画像（イメージ）型</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="M">
+				<xsd:annotation>
+					<xsd:documentation>動画（ムーヴィ）型</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="A">
+				<xsd:annotation>
+					<xsd:documentation>サウンド（音）型</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- Stand alone elements -->
+	<xsd:element name="ID" type="xsd:int" />
+	<xsd:element name="Name" type="xsd:string" />
+	<xsd:element name="Unit" type="xsd:string" />
+	<xsd:element name="TypeString" type="typeStringType" />
+	<xsd:element name="Note" type="xsd:string" />
+	<xsd:element name="MissedValue" type="xsd:string" default="9999" />
+	<!-- RankValue -->
+	<xsd:element name="RankValue">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="float" type="xsd:float" minOccurs="0" maxOccurs="unbounded" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	<!-- RankColorString -->
+	<xsd:element name="RankColorString">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="string" type="xsd:string" minOccurs="0" maxOccurs="unbounded" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	<!-- Rank -->
+	<xsd:element name="Rank">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element ref="RankValue" />
+				<xsd:element ref="RankColorString" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	<!-- DataType -->
+	<xsd:element name="DataType">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element ref="Name" />
+				<xsd:element ref="Unit" />
+				<xsd:element ref="TypeString" />
+				<xsd:element ref="Note" minOccurs="0" />
+				<xsd:element ref="MissedValue" />
+				<xsd:element ref="Rank" minOccurs="0" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	<!-- IndexList -->
+	<xsd:element name="IndexList">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="int" type="xsd:int" minOccurs="0" maxOccurs="unbounded" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	<!-- PMCsvFormat -->
+	<xsd:element name="PMCsvFormat">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element ref="Name" />
+				<xsd:element ref="IndexList" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	<!-- CsvFormats -->
+	<xsd:element name="CsvFormats">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element ref="PMCsvFormat" minOccurs="0" maxOccurs="unbounded" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	<!-- DataTypes -->
+	<xsd:element name="DataTypes">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element ref="DataType" minOccurs="0" maxOccurs="unbounded" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	<!-- PMType -->
+	<xsd:element name="PMType">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element ref="ID" />
+				<xsd:element ref="Name" />
+				<xsd:element ref="Note" minOccurs="0" />
+				<xsd:element ref="DataTypes" />
+				<xsd:element ref="CsvFormats" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	<!-- PMTypes -->
+	<xsd:element name="PMTypes">
+		<xsd:complexType>
+			<xsd:choice>
+				<xsd:element ref="PMType" maxOccurs="unbounded" />
+			</xsd:choice>
+		</xsd:complexType>
+	</xsd:element>
+</xsd:schema>

@@ -1,0 +1,385 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+  FIX-pms スキーマ
+  Version 1.0.0.0 on 14-Feb-2015 by D.J.
+  【生産出荷（ロット管理）データ】
+-->
+
+<xs:schema targetNamespace="http://www.aginfo.jp/PMS/FIX-pms/XMLSchema"
+    elementFormDefault="qualified"
+    xmlns="http://www.aginfo.jp/PMS/FIX-pms/XMLSchema"
+    xmlns:pms="http://www.aginfo.jp/PMS/FIX-pms/XMLSchema"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+>
+  <xs:include schemaLocation="./pmsCommon.xsd"/>
+  <xs:include schemaLocation="./pmsMaster.xsd"/>
+
+  <!--
+      単一（単純）要素
+  -->
+  <xs:element name="ProducerCode" type="xs:ID">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">生産者コード</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="ProducerName" type="nameType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">生産者名（略称）</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="BranchCode" type="xs:ID">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">支部コード</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="BranchName" type="nameType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">支部名</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="ProduceAreaCode" type="xs:ID">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">仕入先産地コード</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="ProduceAreaName" type="nameType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">仕入先産地名（略称）</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="FieldOfficerCode" type="xs:ID">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">圃場担当者コード</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="FieldOfficerName" type="nameType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">圃場担当者名（略称）</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="AssignedCenterCode" type="xs:ID">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">担当拠点コード</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="AssingedCenterName" type="nameType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">拠点略称</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="TradeAmount" type="yieldType"/>
+  <xs:element name="ApplyAmount10a" type="amountPerAreaType"/>
+  <xs:element name="ApplyDate" type="xs:date"/>
+  <xs:element name="PlantDate" type="xs:date"/>
+  <xs:element name="HarvestDate" type="xs:date"/>
+
+  <!-- 前作情報 -->
+  <xs:element name="PrevCropping">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="CropName"/>
+        <xs:element ref="VarietyName"/>
+      </xs:sequence>
+      <xs:attribute name="PrevNumber" type="xs:positiveInteger" use="required">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">前作番号：1以上の整数で前作序数を指定</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+    </xs:complexType>
+  </xs:element>
+  
+  <!-- 土壌情報 -->
+  <xs:element name="SoilInfoItem">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">土壌診断情報項目：数値データのみを対象とします（数値単位は属性にて:NumericValue型）</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="DataName" />
+        <xs:element ref="NumericValue" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="SoilInfo">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="SoilKind" type="nameType"/>
+        <xs:element name="SoilDrainage" type="nameType">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">排水性</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="WetDamage" type="nameType">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">湿害の有無</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="SoukaDamage" type="nameType">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">そうか病（馬鈴薯）の有無</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="DiagnoseYear" type="yearType"/>
+        <xs:element ref="SoilInfoItem" minOccurs="0" maxOccurs="unbounded">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">個々の土壌診断項目（項目名＋単位付き数値）</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- 堆肥情報 -->
+  <xs:element name="CompostInfo">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="CompostKind" type="nameType"/>
+        <xs:element name="CompostYear" type="nameType"/>
+        <xs:element ref="ApplyAmount10a" minOccurs="0"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  
+  <!-- 肥料情報 -->
+  <xs:element name="FertilizerInfoItem">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="FertilizerName" type="nameType"/>
+        <xs:element ref="ApplyAmount10a" minOccurs="0"/>
+        <xs:element ref="ApplyDate" minOccurs="0"/>
+        <xs:element name="N" type="xs:decimal" minOccurs="0"/>
+        <xs:element name="P" type="xs:decimal" minOccurs="0"/>
+        <xs:element name="K" type="xs:decimal" minOccurs="0"/>
+        <xs:element name="Mg" type="xs:decimal" minOccurs="0"/>
+        <xs:element ref="Note" minOccurs="0"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="FertilizerInfo">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="RidgingMachine" type="nameType">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">培土機種</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="RidgingManner" type="nameType">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">培土方法</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element ref="FertilizerInfoItem" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- 農薬情報 -->
+  <xs:element name="ChemicalInfoItem">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="ChemicalName" type="nameType"/>
+        <xs:element ref="ApplyAmount10a" minOccurs="0"/>
+        <xs:element ref="ApplyDate" minOccurs="0"/>
+        <xs:element name="ApplyTarget" type="nameType" minOccurs="0"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="ChemicalInfo">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="ChemicalInfoItem" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- 種子情報 -->
+  <xs:element name="SeedInfo">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="SeedName" type="nameType"/>
+        <xs:element name="ProductionArea" type="nameType"/>
+        <xs:element name="Producer" type="nameType"/>
+        <xs:element ref="ApplyAmount10a" minOccurs="0"/>
+        <xs:element name="SeedingMachine" type="nameType" minOccurs="0"/>
+        <xs:element name="SeedingManner" type="nameType" minOccurs="0"/>
+        <xs:element name="RidgingWidth" type="xs:positiveInteger" minOccurs="0"/>
+        <xs:element name="SeedingWidth" type="xs:positiveInteger" minOccurs="0"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- 農場情報 -->
+  <xs:element name="FarmInfo">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">Defines the information on product lot</xs:documentation>
+      <xs:documentation xml:lang="ja">生産物のロット情報です</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="ProducerCode"/>
+        <xs:element ref="ProducerName"/>
+        <xs:element ref="BranchCode"/>
+        <xs:element ref="BranchName"/>
+        <xs:element ref="ProduceAreaCode"/>
+        <xs:element ref="ProduceAreaName"/>
+        <xs:element ref="FieldOfficerCode"/>
+        <xs:element ref="FieldOfficerName"/>
+        <xs:element ref="AssignedCenterCode"/>
+        <xs:element ref="AssingedCenterName"/>
+        <xs:element ref="Note" minOccurs="0"/>
+      </xs:sequence>
+			<xs:attribute name="acl" type="aclStringType" use="optional" default="Owner" />
+    </xs:complexType>
+  </xs:element>
+
+  <!-- 栽培情報（耕種概要） -->
+  <xs:element name="CroppingInfo">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">Defines the information on product lot</xs:documentation>
+      <xs:documentation xml:lang="ja">生産物のロット情報です</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="CropName"/>
+        <xs:element ref="VarietyName" minOccurs="0"/>
+        <xs:element ref="FieldCode"/>
+        <xs:element ref="FieldNumber" minOccurs="0"/>
+        <xs:element ref="FieldName" minOccurs="0"/>
+        <xs:element ref="CroppingArea" minOccurs="0"/>
+        <xs:element ref="Yield" minOccurs="0"/>
+        <xs:element ref="Yield10a" minOccurs="0"/>
+        <xs:element ref="TradeAmount" minOccurs="0"/>
+        <xs:element ref="PrevCropping" minOccurs="0" maxOccurs="5"/>
+        <xs:element ref="SoilInfo" minOccurs="0"/>
+        <xs:element ref="FertilizerInfo" minOccurs="0"/>
+        <xs:element ref="ChemicalInfo" minOccurs="0"/>
+        <xs:element ref="SeedInfo" minOccurs="0"/>
+        <xs:element ref="PlantDate" minOccurs="0"/>
+        <xs:element ref="HarvestDate" minOccurs="0"/>
+        <xs:element ref="Note" minOccurs="0"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- 生産ロット情報 -->
+  <xs:element name="LotInfo">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">Defines the information on product lot</xs:documentation>
+      <xs:documentation xml:lang="ja">生産物のロット情報です</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="InternalLotNumber" type="xs:positiveInteger">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">内部ロット情報（生産出荷情報）へリンク？</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  
+  <!-- 生産物品質情報（キーバリュー形式で任意データ項目を表現） -->
+  <xs:element name="QualityInfoItem">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">生産物品質情報項目をキーバリューで表現する基本要素です。</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="DataName">
+          <xs:annotation>
+            <xs:documentation xml:lang="en">Data item name in string.</xs:documentation>
+            <xs:documentation xml:lang="ja">データ項目名</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element ref="ValueString">
+          <xs:annotation>
+            <xs:documentation xml:lang="en">Data value in string.</xs:documentation>
+            <xs:documentation xml:lang="ja">データ値</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element ref="DataType" minOccurs="0">
+          <xs:annotation >
+            <xs:documentation xml:lang="en">Data type in string.</xs:documentation>
+            <xs:documentation xml:lang="ja">データ型</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element ref="UnitString" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="en">Data unit in string.</xs:documentation>
+            <xs:documentation xml:lang="ja">データ単位（文字列）</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element ref="Note" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="en">Note: any memorandum in string.</xs:documentation>
+            <xs:documentation xml:lang="ja">備考：データ項目についての任意のメモ</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <!-- 生産物品質情報コンテナ -->
+	<xs:element name="QualityInfo">
+		<xs:annotation>
+      <xs:documentation xml:lang="en">Defines the information structure on product quality...</xs:documentation>
+			<xs:documentation xml:lang="ja">生産物の品質情報要素です。KeyValue形式で複数の任意項目を登録できる形式です。</xs:documentation>
+		</xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="QualityInfoItem" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+	<!--
+    生産物情報
+  -->
+  <!-- 型定義 -->
+  <xs:complexType name="productInfoType">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">Defines the type of product information...</xs:documentation>
+      <xs:documentation xml:lang="ja">生産物情報タイプを定義しています</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="ProductYear" type="yearType"/>
+      <xs:element ref="FarmInfo"/>
+      <xs:element ref="CroppingInfo"/>
+      <xs:element ref="LotInfo">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">Lot information of product.</xs:documentation>
+          <xs:documentation xml:lang="ja">生産物のロット情報です</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="QualityInfo" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">Quality information of product.</xs:documentation>
+          <xs:documentation xml:lang="ja">ロットの品質データ（項目名と値のセット:"QualityInfoItem"）リストを格納します</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="Note" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attribute name="acl" type="aclStringType" use="optional" default="Owner" />
+  </xs:complexType>
+  <!--単一生産物情報データ要素-->
+	<xs:element name="ProductInfo" type="productInfoType">
+		<xs:annotation>
+			<xs:documentation xml:lang="ja">単一の生産物情報要素です（→ productInfoType型）</xs:documentation>
+      <xs:documentation xml:lang="en">Stores shipping information of crop product by &lt;productInfoType&gt; class, refer to productInfoType</xs:documentation>
+		</xs:annotation>
+  </xs:element>
+	<!--生産物情報データ群要素-->
+	<xs:element name="ProductInfos">
+		<xs:annotation>
+			<xs:documentation xml:lang="ja">単一生産物情報データの繰り返し（コンテナ要素）</xs:documentation>
+      <xs:documentation xml:lang="en">Contains multiple &lt;ProductInfo&gt; element as container element</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="ProductInfo" maxOccurs="unbounded"/>
+			</xs:sequence>
+			<xs:attribute name="acl" type="aclStringType" use="optional" default="Owner" />
+		</xs:complexType>
+	</xs:element>
+
+</xs:schema>

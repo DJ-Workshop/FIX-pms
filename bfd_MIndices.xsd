@@ -1,0 +1,105 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            attributeFormDefault="unqualified"
+            elementFormDefault="qualified"
+            finalDefault="#all"
+            blockDefault="#all"
+            targetNamespace="http://naro.narc.fmd.go.jp/bfd"
+            xmlns:bfd="http://naro.narc.fmd.go.jp/bfd"
+            xmlns:bfdmis="http://naro.narc.fmd.go.jp/bfd/MISource"
+            xmlns:bfdmip="http://naro.narc.fmd.go.jp/bfd/MIProperty"
+            xmlns:bfdin="http://naro.narc.fmd.go.jp/bfd/Income"
+            xmlns:bfdvc="http://naro.narc.fmd.go.jp/bfd/VCost"
+            xmlns:bfdw="http://naro.narc.fmd.go.jp/bfd/Working"
+            xmlns:bfdel="http://naro.narc.fmd.go.jp/bfd/Element"
+            >
+
+  <!--外部スキーマの取り込み-->
+  <xsd:import namespace="http://naro.narc.fmd.go.jp/bfd/Element" schemaLocation="bfd_Element.xsd" />
+  <xsd:import namespace="http://naro.narc.fmd.go.jp/bfd/MISource" schemaLocation="bfd_MISources.xsd" />
+  <xsd:import namespace="http://naro.narc.fmd.go.jp/bfd/MIProperty" schemaLocation="bfd_MIProperties.xsd" />
+  <xsd:import namespace="http://naro.narc.fmd.go.jp/bfd/Income" schemaLocation="bfd_Incomes.xsd" />
+  <xsd:import namespace="http://naro.narc.fmd.go.jp/bfd/VCost" schemaLocation="bfd_VCostses.xsd" />
+  <xsd:import namespace="http://naro.narc.fmd.go.jp/bfd/Working" schemaLocation="bfd_Workingses.xsd" />
+
+  <!--スキーマ情報-->
+  <xsd:annotation>
+    <xsd:appinfo>
+      Scheme Version 1.00
+    </xsd:appinfo>
+    <xsd:documentation>
+      経営指標項目群用のXMLスキーマ
+      元資料情報はMISourceID要素でMISouce.xml情報を参照
+      外部スキーマとして、属性(1)、収入(1)、変動費(N)、農作業(N)を利用
+    </xsd:documentation>
+  </xsd:annotation>
+
+  <!--経営指標項目群のルート要素設定-->
+  <xsd:element name="MIndices">
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element ref="bfd:MIndex" minOccurs="0" maxOccurs="unbounded" />
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+
+  <!--経営指標項目の要素宣言-->
+  <xsd:element name="MIndex">
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element ref="bfdel:MIndexID" minOccurs="1" maxOccurs="1">
+          <xsd:annotation>
+            <xsd:documentation>
+              経営指標項目を参照させるための外部キー
+              共通要素スキーマから参照
+            </xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+        <!--経営指標項目の元資料情報-->
+        <!--元資料の外部参照キーのみを参照-->
+        <!--
+        <xsd:element ref="bfdel:MISourceID" minOccurs="0" maxOccurs="1">
+          <xsd:annotation>
+            <xsd:documentation>
+              経営指標項目の元資料を参照するための外部キー
+              共通要素スキーマから参照
+            </xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+        -->
+        <!--/元資料の外部参照キーのみを参照-->
+        <!--元資料の詳細も付加する場合-->
+        <xsd:element ref="bfdmis:MISource" minOccurs="0" maxOccurs="1" />
+        <!--/元資料の詳細も付加する場合-->
+        <!--/経営指標項目の元資料情報-->
+        <!--経営指標項目のサブ要素の参照-->
+        <xsd:element ref="bfd:MIndexName" minOccurs="1" maxOccurs="1" />
+        <!--外部スキーマからサブ要素を参照-->
+        <!--xmlファイルにグループ的な階層を付けない場合-->
+        <!--
+        <xsd:group ref="bfdmip:GroupMIProperty" minOccurs="1" maxOccurs="1" />
+        <xsd:group ref="bfdin:GroupIncome" minOccurs="1" maxOccurs="1" />
+        -->
+        <!--/xmlファイルにグループ的な階層を付けない場合-->
+        <!--xmlファイルにグループ的な階層を付ける場合-->
+        <xsd:element ref="bfdmip:MIProperty" minOccurs="1" maxOccurs="1" />
+        <xsd:element ref="bfdin:Income" minOccurs="1" maxOccurs="1" />
+        <!--/xmlファイルにグループ的な階層を付ける場合-->
+        <xsd:element ref="bfdvc:VCosts" minOccurs="1" maxOccurs="1" />
+        <xsd:element ref="bfdw:Workings" minOccurs="1" maxOccurs="1" />
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+
+  <!--経営指標項目のサブ項目の要素宣言-->
+  <xsd:element name="MIndexName" type="xsd:string">
+    <xsd:annotation>
+      <xsd:documentation>
+        経営指標要素名
+        RegionNaem_CropName_CroppinType_BreedName_CroppingSize_LandCategory
+        重複なし
+      </xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+
+</xsd:schema>

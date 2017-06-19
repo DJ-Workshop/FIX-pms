@@ -1,0 +1,104 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            attributeFormDefault="unqualified"
+            elementFormDefault="qualified"
+            finalDefault="#all"
+            blockDefault="#all"
+            targetNamespace="http://naro.narc.fmd.go.jp/bfd/VCost"
+            xmlns:bfdvc="http://naro.narc.fmd.go.jp/bfd/VCost"
+            xmlns:bfdel="http://naro.narc.fmd.go.jp/bfd/Element"
+            xmlns:bfdtr="http://naro.narc.fmd.go.jp/bfd/TypeRestriction"
+            >
+
+  <!--外部スキーマの取り込み-->
+  <xsd:import namespace="http://naro.narc.fmd.go.jp/bfd/Element" schemaLocation="bfd_Element.xsd" />
+  <xsd:import namespace="http://naro.narc.fmd.go.jp/bfd/TypeRestriction" schemaLocation="bfd_Type.xsd" />
+
+  <!--スキーマ情報-->
+  <xsd:annotation>
+    <xsd:appinfo>
+      Scheme Version 1.00
+    </xsd:appinfo>
+    <xsd:documentation>
+      変動費群用のXMLスキーマ
+    </xsd:documentation>
+  </xsd:annotation>
+
+  <!--変動費群のルート要素宣言-->
+  <xsd:element name="VCostses">
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element ref="bfdvc:VCosts" minOccurs="1" maxOccurs="unbounded" />
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+
+  <!--変動費群の要素宣言-->
+  <xsd:element name="VCosts">
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element ref="bfdel:MIndexID" minOccurs="0" maxOccurs="1">
+          <xsd:annotation>
+            <xsd:documentation>
+              経営指標要素を参照するための外部キー
+              共通要素スキーマから参照
+            </xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+        <xsd:element ref="bfdvc:VCost" minOccurs="1" maxOccurs="unbounded" />
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+
+  <!--変動費の要素宣言-->
+  <xsd:element name="VCost">
+    <xsd:complexType>
+      <xsd:sequence>
+        <!--変動費のサブ要素の参照-->
+        <xsd:element ref="bfdvc:VCostItem" minOccurs="1" maxOccurs="1" />
+        <xsd:element ref="bfdvc:VCostName" minOccurs="1" maxOccurs="1" />
+        <xsd:element ref="bfdvc:VCostArea" minOccurs="1" maxOccurs="1" />
+        <xsd:element ref="bfdvc:VCostQuantity" minOccurs="1" maxOccurs="1" />
+        <xsd:element ref="bfdvc:VCostPrice" minOccurs="1" maxOccurs="1" />
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+
+    <!--変動費のサブ項目の要素宣言-->
+  <xsd:element name="VCostItem" type="bfdtr:TypeVCostItem">
+    <xsd:annotation>
+      <xsd:documentation>
+        集計費目名、VCosItemのXMLファイルを参照する外部キー
+      </xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="VCostName" type="xsd:string">
+    <xsd:annotation>
+      <xsd:documentation>
+        変動費の細目
+      </xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="VCostArea" type="xsd:integer" default="10">
+    <xsd:annotation>
+      <xsd:documentation>
+        10a当たり費用の計算に使用する面積（a)、初期値10a
+      </xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="VCostQuantity" type="xsd:decimal" default="1">
+    <xsd:annotation>
+      <xsd:documentation>
+        上記の面積で使用する数量（任意の単位）、初期値1
+      </xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="VCostPrice" type="xsd:decimal" default="0">
+    <xsd:annotation>
+      <xsd:documentation>
+        上記数量1単位当たりの金額（円）、初期値0円
+      </xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+
+</xsd:schema>

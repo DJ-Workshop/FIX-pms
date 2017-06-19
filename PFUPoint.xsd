@@ -1,0 +1,364 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+【改版履歴】
+  13-Jan-2014 型（クラス）と要素（インスタンス）の定義関係見直し・・・要素の定義内容自体は変更なし by D.J.
+-->
+<xsd:schema targetNamespace="http://aginfo.jp/PFU/PFUPoint/2/1" elementFormDefault="qualified" xmlns="http://aginfo.jp/PFU/PFUPoint/2/1" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:pmt="http://aginfo.jp/PFU/PMTypes/1/1" version="2.1">
+	<xsd:import namespace="http://aginfo.jp/PFU/PMTypes/1/1" schemaLocation="PMTypes.xsd" />
+  <!--//////////////-->
+	<!-- 単一基本要素 -->
+  <!--//////////////-->
+  <xsd:element name="stringValue" type="xsd:string" />
+	<xsd:element name="integerValue" type="xsd:integer" />
+	<xsd:element name="doubleValue" type="xsd:double" />
+	<xsd:element name="datetimeValue" type="xsd:dateTime" />
+	<xsd:element name="logicalValue" type="xsd:boolean" />
+	<xsd:element name="linkValue" type="xsd:anyURI" />
+	<xsd:element name="imageB64Value" type="xsd:base64Binary" />
+	<xsd:element name="imageHexValue" type="xsd:hexBinary" />
+	<xsd:element name="imageURIValue" type="xsd:anyURI" />
+	<xsd:element name="soundB64Value" type="xsd:base64Binary" />
+	<xsd:element name="soundHexValue" type="xsd:hexBinary" />
+	<xsd:element name="soundURIValue" type="xsd:anyURI" />
+	<xsd:element name="movieB64Value" type="xsd:base64Binary" />
+	<xsd:element name="movieHexValue" type="xsd:hexBinary" />
+	<xsd:element name="movieURIValue" type="xsd:anyURI" />
+  <!-- ////////////////////////////////////////////// -->
+	<!-- 任意のデータ型からならデータセット（横展開用） -->
+  <!-- ////////////////////////////////////////////// -->
+  <xsd:element name="structValue">
+    <xsd:annotation>
+      <xsd:documentation>任意のデータ型からなるデータセット</xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexType>
+      <xsd:choice>
+        <xsd:element ref="stringValue"/>
+        <xsd:element ref="integerValue"/>
+        <xsd:element ref="doubleValue"/>
+        <xsd:element ref="datetimeValue"/>
+        <xsd:element ref="logicalValue"/>
+        <xsd:element ref="linkValue"/>
+        <xsd:choice>
+          <xsd:element ref="imageB64Value"/>
+          <xsd:element ref="imageHexValue"/>
+          <xsd:element ref="imageURIValue"/>
+        </xsd:choice>
+        <xsd:choice>
+          <xsd:element ref="soundB64Value"/>
+          <xsd:element ref="soundHexValue"/>
+          <xsd:element ref="soundURIValue"/>
+        </xsd:choice>
+        <xsd:choice>
+          <xsd:element ref="movieB64Value"/>
+          <xsd:element ref="movieHexValue"/>
+          <xsd:element ref="movieURIValue"/>
+        </xsd:choice>
+      </xsd:choice>
+    </xsd:complexType>
+  </xsd:element>
+  <!-- データセット配列 -->
+  <xsd:element name="structVector">
+    <xsd:annotation>
+      <xsd:documentation>データセット配列</xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element ref="structValue" maxOccurs="unbounded" />
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+  <!--//////////////////////////////////-->
+  <!-- 基本的な一次元配列型（ベクタ型） -->
+  <!--//////////////////////////////////-->
+	<xsd:simpleType name="listDouble">
+		<xsd:annotation>
+			<xsd:documentation>実数値リスト</xsd:documentation>
+		</xsd:annotation>
+		<xsd:list itemType="xsd:double" />
+	</xsd:simpleType>
+  <!-- 文字列配列 -->
+  <xsd:element name="stringVector">
+    <xsd:annotation>
+      <xsd:documentation>文字列配列データ</xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element ref="stringValue" maxOccurs="unbounded" />
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+  <!-- 整数配列 -->
+  <xsd:element name="integerVector">
+    <xsd:annotation>
+      <xsd:documentation>整数配列データ</xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element ref="integerValue" maxOccurs="unbounded" />
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+  <!-- 実数配列 -->
+  <xsd:element name="doubleVector">
+    <xsd:annotation>
+      <xsd:documentation>倍精度浮動小数点配列データ</xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexType>
+      <xsd:annotation>
+        <xsd:documentation>
+          倍精度浮動小数点の一次元配列（ベクトル）型を定義しています。
+        </xsd:documentation>
+      </xsd:annotation>
+      <xsd:sequence>
+        <xsd:element ref="doubleValue" maxOccurs="unbounded" />
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+  <!-- 日時配列 -->
+  <xsd:element name="datetimeVector">
+    <xsd:annotation>
+      <xsd:documentation>日時配列データ</xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element ref="datetimeValue" maxOccurs="unbounded" />
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+  <!-- 論理配列 -->
+  <xsd:element name="logicalVector">
+    <xsd:annotation>
+      <xsd:documentation>論理値配列データ</xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element ref="logicalValue" maxOccurs="unbounded" />
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+  <!-- リンク配列 -->
+  <xsd:element name="linkVector">
+    <xsd:annotation>
+      <xsd:documentation>リンク配列データ</xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element ref="linkValue" maxOccurs="unbounded" />
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+  <!-- イメージ配列 -->
+  <xsd:element name="imageVector">
+    <xsd:annotation>
+      <xsd:documentation>画像イメージ配列データ</xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexType>
+      <xsd:choice>
+        <xsd:element ref="imageB64Value" maxOccurs="unbounded" />
+        <xsd:element ref="imageHexValue" maxOccurs="unbounded" />
+        <xsd:element ref="imageURIValue" maxOccurs="unbounded" />
+      </xsd:choice>
+    </xsd:complexType>
+  </xsd:element>
+  <!-- サウンド配列 -->
+  <xsd:element name="soundVector">
+    <xsd:annotation>
+      <xsd:documentation>サウンド配列データ</xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexType>
+      <xsd:choice>
+        <xsd:element ref="soundB64Value" maxOccurs="unbounded" />
+        <xsd:element ref="soundHexValue" maxOccurs="unbounded" />
+        <xsd:element ref="soundURIValue" maxOccurs="unbounded" />
+      </xsd:choice>
+    </xsd:complexType>
+  </xsd:element>
+  <!-- ムーヴィー配列 -->
+  <xsd:element name="movieVector">
+    <xsd:annotation>
+      <xsd:documentation>ムーヴィー配列データ</xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexType>
+      <xsd:choice>
+        <xsd:element ref="movieB64Value" maxOccurs="unbounded" />
+        <xsd:element ref="movieHexValue" maxOccurs="unbounded" />
+        <xsd:element ref="movieURIValue" maxOccurs="unbounded" />
+      </xsd:choice>
+    </xsd:complexType>
+  </xsd:element>
+	<!-- 任意のデータ型を取り得るデータ配列型（縦展開用） -->
+  <xsd:element name="anyVector">
+    <xsd:annotation>
+      <xsd:documentation xml:lang="ja">任意配列データ</xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexType>
+      <xsd:choice>
+        <xsd:element ref="stringVector" />
+        <xsd:element ref="integerVector" />
+        <xsd:element ref="doubleVector" />
+        <xsd:element ref="datetimeVector" />
+        <xsd:element ref="logicalVector" />
+        <xsd:element ref="linkVector" />
+        <xsd:element ref="imageVector" />
+        <xsd:element ref="soundVector" />
+        <xsd:element ref="movieVector" />
+      </xsd:choice>
+    </xsd:complexType>
+  </xsd:element>
+	<!-- PointDataの共通要素 -->
+	<xsd:element name="localX" type="xsd:double" />
+	<xsd:element name="localY" type="xsd:double" />
+	<xsd:element name="localZ" type="xsd:double" />
+	<xsd:element name="type" type="xsd:int" />
+  <xsd:element name="localXVector">
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element ref="localX" maxOccurs="unbounded" />
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+  <xsd:element name="localYVector">
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element ref="localY" maxOccurs="unbounded" />
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+  <xsd:element name="localZVector">
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element ref="localZ" maxOccurs="unbounded" />
+      </xsd:sequence>
+    </xsd:complexType>  
+  </xsd:element>
+	<!--*******************************************************-->
+	<!-- はじめにPointDataTypeのデータ型を定義します【初期版】 -->
+	<!--*******************************************************-->
+	<!-- PointData -->
+  <xsd:element name="PointData">
+    <xsd:annotation>
+      <xsd:documentation>
+        PFUManagerで定義された「属性データタイプ定義」に基づく地点データ（抜粋）スキーマです。GPX1.1の拡張部分に適用する目的で定義されています。各地点ごとに最大16個までの属性データを付与できます（上限あり）。wptTypeの拡張として利用されることを想定しています。
+        PointDataTypeは初期バージョンで個々の属性データのデータ型はdoubleに限定されています。
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element ref="localX" />
+        <xsd:element ref="localY" />
+        <xsd:element ref="localZ" minOccurs="0" />
+        <xsd:element ref="type" />
+        <xsd:element name="data0" type="xsd:double" minOccurs="0" />
+        <xsd:element name="data1" type="xsd:double" minOccurs="0" />
+        <xsd:element name="data2" type="xsd:double" minOccurs="0" />
+        <xsd:element name="data3" type="xsd:double" minOccurs="0" />
+        <xsd:element name="data4" type="xsd:double" minOccurs="0" />
+        <xsd:element name="data5" type="xsd:double" minOccurs="0" />
+        <xsd:element name="data6" type="xsd:double" minOccurs="0" />
+        <xsd:element name="data7" type="xsd:double" minOccurs="0" />
+        <xsd:element name="data8" type="xsd:double" minOccurs="0" />
+        <xsd:element name="data9" type="xsd:double" minOccurs="0" />
+        <xsd:element name="dataA" type="xsd:double" minOccurs="0" />
+        <xsd:element name="dataB" type="xsd:double" minOccurs="0" />
+        <xsd:element name="dataC" type="xsd:double" minOccurs="0" />
+        <xsd:element name="dataD" type="xsd:double" minOccurs="0" />
+        <xsd:element name="dataE" type="xsd:double" minOccurs="0" />
+        <xsd:element name="dataF" type="xsd:double" minOccurs="0" />
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+	<!--********************************************************-->
+  <!-- 次にPointDataSetTypeのデータ型を定義します（第2版以降）-->
+	<!--********************************************************-->
+  <xsd:element name="PointDataCoreSet">
+    <xsd:annotation>
+      <xsd:documentation>
+        この地点データ型は１地点の属性データを可変個数（ベクタ）で表現しています。PointDataType型と異なり，属性データ個数が16個を越える場合にも対応できます。
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element ref="localX" />
+        <xsd:element ref="localY" />
+        <xsd:element ref="localZ" minOccurs="0" />
+        <!--xsd:element name="atrAry" type="doubleVectorType" minOccurs ="0" /-->
+        <!--xsd:element name="attrData" type="structVectorType" /-->
+        <xsd:element ref="structVector" />
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+	<!-- PointDataSet -->
+  <xsd:element name="PointDataSet">
+    <xsd:annotation>
+      <xsd:documentation>
+        PointDataCoreTypeに属性データタイプ定義のType番号を付加したデータ型です。1地点の完全な属性データセットを表現してます。
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element ref="type" />
+        <xsd:element ref="PointDataCoreSet"  />
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+	<!--*************************************************************-->
+  <!-- 次にPointDataSetArrayTypeのデータ型を定義します（第2版以降）-->
+	<!--*************************************************************-->
+  <xsd:element name="PointDataSetArray">
+    <xsd:annotation>
+      <xsd:documentation>
+        地点データコアの配列にデータタイプ番号を付加したデータ型です。一連の地点属性データ群を表現しています（横展開型）。trksegTypeの拡張に使用します。
+        属性データタイプ定義についてはタイプ番号の他にタイプ定義そのものを設定できます（Ver.2.0より）
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:choice>
+          <xsd:element ref="type" />
+          <xsd:element ref="pmt:PMType" />
+        </xsd:choice>
+        <!--xsd:element name="dataArray" type="PointDataCoreSetType" minOccurs="0" maxOccurs="unbounded" /-->
+        <xsd:element ref="PointDataCoreSet" minOccurs="0" maxOccurs="unbounded" />
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+	<!--*****************************************************************-->
+  <!-- 最後にPointDataEachArrayTypeのデータ型を定義します（第2版以降） -->
+	<!--*****************************************************************-->
+  <xsd:element name="PointDataEachArray">
+    <xsd:annotation>
+      <xsd:documentation>
+        地点データを各項目ごとに配列化した上でデータタイプ番号を付加したデータ型です。一連の地点属性データ群を表現しています（縦展開型）。trksegTypeの拡張に使用します。
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:choice>
+          <xsd:element ref="type" />
+          <xsd:element ref="pmt:PMType" />
+        </xsd:choice>
+        <xsd:element ref="localXVector" />
+        <xsd:element ref="localYVector" />
+        <xsd:element ref="localZVector" minOccurs="0" />
+        <!--xsd:element name="dataArray" type="doubleVectorType" minOccurs="0" maxOccurs="unbounded" /-->
+        <!--xsd:element name="dataArray" type="anyVectorType" minOccurs="0" maxOccurs="unbounded" /-->
+        <xsd:element ref="anyVector" minOccurs="0" maxOccurs="unbounded" />
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+  <!--*********************************************************************-->
+  <!-- おまけ：ExtensionTypeを定義することで，PFUPointの拡張定義が可能です -->
+  <!--*********************************************************************-->
+  <xsd:element name="Extensions">
+    <xsd:annotation>
+      <xsd:documentation>
+        PFUManager地点データの拡張部分です。自由に定義を追加するための場所です。
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:any namespace="##other" processContents ="lax" minOccurs ="0" maxOccurs ="unbounded" />
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+</xsd:schema>

@@ -1,0 +1,1328 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+  FIX-pms スキーマ
+  【メイン】
+	Version 1.0.0.1 on 21-Jul-2011 by D.J.　・・・　初版
+	Version 1.0.0.2 on 06-Oct-2011 by D.J.　・・・　一部冗長な定義を削除，アノテーション（ドキュメント）追加
+	Version 1.0.0.3 on 17-Nov-2011 by D.J.　・・・　生育管理データ表現要素<userDataType>にデータ項目コード（整数値）を追加：PMSでのインポート処理時にコード解決が必要なことが判明したため（これまでのスキーマでは生育マスタ情報が無かったので解決不能だった）
+	Version 1.0.0.4 on 17-Nov-2011 by D.J.　・・・　数値データ配列表現要素<numericDataItemType>に項目コード（整数値）を追加：上記と同じ理由（土壌・品質台帳）
+	Version 1.0.0.5 on 19-Nov-2011 by D.J.　・・・　バーコード配列表現要素<eachCodeType>に対象コード（文字列）を追加：個別出荷用に出荷コードに加え製品コード（Target要素）を追加
+	Version 1.0.0.6 on 14-Jan-2012 by D.J.	・・・	商品要素<Product>・同配列表現要素<Products>追加
+	Version 1.0.1.0 on 25-May-2012 by D.J.　・・・　パートフィールド構造追加（圃場データの階層構造化），BIX-pp引用・固定点連続計測データ追加，など
+	Version 1.0.1.1 on 04-Jul-2012 by D.J.	・・・　パートフィールドに空間データ要素追加（漏れていたバグ修正：部分区画にも空間情報は必要でしょう^^;ゞ）
+	Version 1.0.2.0 on 09-Jul-2012 by D.J.	・・・	ユーザデータ型定義情報（生育データ）型・要素追加 → "pmsMaster.xsd"
+	Version 1.0.2.1 on 20-Jul-2012 by D.J.	・・・	作業データ種別型・要素追加（当初・計画・実績を識別），ユーザデータ型定義で定義可能なデータ型に'B'：バーコード型を追加
+	Version 1.0.2.2 on 04-Dec-2012 by D.J.	・・・	主要要素にACL属性を追加
+	Version 1.0.2.3 on 21-Mar-2013 by D.J.	・・・	一部要素にACL属性を追加（前回追加漏れの対応）
+  Version 1.0.3.0 on 13-Jan-2014 by D.J.  ・・・　要素一部追加，型～要素定義整理（冗長定義削除）
+  Version 1.0.4.0 on 09-May-2015 by D.J.  ・・・　コード体系定義追加→コード定義更新，成分量単位型追加→肥料成分定義更新
+	Version 1.0.4.1 on 08-Jun-2015 by D.J.	・・・	文字コード型単独要素追加 <FarmerCode>, <OwnerCode>, ....
+  ======================================
+  Version 1.1.0.0 on 29-Dec-2015 by D.J.　・・・　技術体系DBインタフェイス，一次加工流通出荷インタフェイス，NARC経営指標インタフェイス対応
+  Version 1.1.1.0 on 17-Jan-2016 by D.J.  ・・・　技術体系DBインタフェイス調整に伴うスキーマ仕様更新
+  Version 1.1.2.0 on 22-Jan-2016 by D.J.　・・・　　　　〃
+-->
+
+<xs:schema targetNamespace="http://www.aginfo.jp/PMS/FIX-pms/XMLSchema"
+    elementFormDefault="qualified"
+    xmlns="http://www.aginfo.jp/PMS/FIX-pms/XMLSchema"
+    xmlns:fp ="http://www.aginfo.jp/PMS/FIX-pms/XMLSchema"
+    xmlns:gpx="http://www.topografix.com/GPX/1/1"
+    xmlns:gml="http://www.opengis.net/gml"
+		xmlns:bix="http://w3.fb.u-tokai.ac.jp/BIX-pp/XMLSchema"
+    xmlns:bfd="http://naro.narc.fmd.go.jp/bfd"
+		xmlns:xs ="http://www.w3.org/2001/XMLSchema"
+>
+	<xs:import namespace="http://www.opengis.net/gml" schemaLocation="./Gml.xsd"/>
+  <xs:import namespace="http://www.topografix.com/GPX/1/1" schemaLocation="./gpx.xsd"/>
+	<xs:import namespace="http://w3.fb.u-tokai.ac.jp/BIX-pp/XMLSchema" schemaLocation="./BIX-pp.xsd"/>
+  <xs:import namespace="http://naro.narc.fmd.go.jp/bfd" schemaLocation="./bfd_MIndices.xsd"/>
+
+  <xs:include schemaLocation="./pmsCommon.xsd"/>
+  <xs:include schemaLocation="./pmsMaster.xsd"/>
+  <xs:include schemaLocation="./pmsWorkProcess.xsd"/>
+  <xs:include schemaLocation="./pmsProduct.xsd"/>
+  <xs:include schemaLocation="./pmsProductOut.xsd"/>
+
+  <!-- スキーマ情報 -->
+  <xs:annotation>
+    <xs:appinfo>FIX-pms schema version 1.1.2</xs:appinfo>
+    <xs:documentation xml:lang="ja">農業生産工程管理データ交換標準書式 FIX-pms のスキーマを定義しています。</xs:documentation>
+    <xs:documentation xml:lang="en">This .xsd document defines the xml schema of 'FIX-pms' as one of common data exchange formats for farm management data.</xs:documentation>
+  </xs:annotation>
+
+  <!--空間情報（GML引用）-->
+	<xs:element name="SpatialData">
+		<xs:annotation>
+			<xs:documentation xml:lang="ja">関連する要素の空間情報を点，線，面の座標値として格納します</xs:documentation>
+      <xs:documentation xml:lang="en">Store geospatial data in form of point, linestring, polygon</xs:documentation>
+		</xs:annotation>
+    <xs:complexType>
+      <xs:annotation>
+        <xs:documentation xml:lang="ja">OpenGISのGMLに従い，定義空間データ（GISデータ）型を定義しています</xs:documentation>
+        <xs:documentation xml:lang="en">Define the spatial data type referring GML geospatial element</xs:documentation>
+      </xs:annotation>
+      <xs:sequence>
+        <xs:element ref="gml:Point" minOccurs="0" maxOccurs="unbounded">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">圃場要素では区画代表点（中心点）を保持します。</xs:documentation>
+            <xs:documentation xml:lang="en">Store geospatial point data</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element ref="gml:LineString" minOccurs="0" maxOccurs="unbounded">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">作業要素では作業軌跡（地点の一次元集合）を保持します。通常作業軌跡表現にはGPXXが使用されますが，単純な軌跡情報としての利用も可能です。</xs:documentation>
+            <xs:documentation xml:lang="en">Store geospatial linestring data</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element ref="gml:Polygon" minOccurs="0" maxOccurs="unbounded">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">圃場要素では区画形状（頂点集合）を保持します。</xs:documentation>
+            <xs:documentation xml:lang="en">Store geospatial polygon data</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+      </xs:sequence>
+      <xs:attributeGroup ref="acls">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">この要素のアクス件情報を保持します。</xs:documentation>
+          <xs:documentation xml:lang="en">Store access control designator of this element</xs:documentation>
+        </xs:annotation>
+      </xs:attributeGroup>
+    </xs:complexType>
+  </xs:element>
+
+	<!-- 計測情報（BIX-pp引用）：将来的には他の規格も並べて引用可 -->
+	<xs:element name="MeasuredData">
+		<xs:annotation>
+			<xs:documentation xml:lang="ja">固定設置センサによる連続計測データを保持する要素です。現在はBIX-pp3.0によるデータのみです。</xs:documentation>
+      <xs:documentation xml:lang="en">Store stational and time-series(domain) measured data</xs:documentation>
+		</xs:annotation>
+    <xs:complexType>
+      <xs:annotation>
+        <xs:documentation xml:lang="ja">固定設置センサ等による連続計測データを保持します。内部では東海大学で提唱されている"BIX-pp 3.0"規格を引用しています。将来的には他の規格もシーケンスに加えるという含み（拡張性）を残しています。</xs:documentation>
+        <xs:documentation xml:lang="en">Define the data structure of stational and time domain measured data referring the BIX-pp 3.0 advocated by Dr.Hoshi(Kinki univ. in Jpn.)</xs:documentation>
+      </xs:annotation>
+      <xs:sequence>
+        <xs:element ref="bix:BIX-pp" minOccurs="0" maxOccurs="unbounded">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">BIX-pp規格による連続計測データ表現を定義しています。</xs:documentation>
+            <xs:documentation xml:lang="en">Refer the BIX-pp element</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+      </xs:sequence>
+      <xs:attributeGroup ref="acls">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">この要素のアクス件情報を保持します。</xs:documentation>
+          <xs:documentation xml:lang="en">Store access control designator of this element</xs:documentation>
+        </xs:annotation>
+      </xs:attributeGroup>
+    </xs:complexType>
+  </xs:element>
+
+	<!--農場情報（管理ファイル情報を含む）-->
+  <!-- 型定義 -->
+  <xs:complexType name="farmType">
+    <xs:annotation>
+      <xs:documentation xml:lang="jp">「農場」タイプを定義しています</xs:documentation>
+      <xs:documentation xml:lang="en">Defines the data structure about farm information</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element ref="FarmID" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">農場を識別するコード：現バージョンでは正整数です</xs:documentation>
+          <xs:documentation xml:lang="en">A numeric code that identifies farm</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+			<xs:element ref="FarmCode" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation xml:lang="ja">農場を識別するコード：上記の正整数に対して，こちらは文字列コードを想定</xs:documentation>
+          <xs:documentation xml:lang="en">A literal code that identifies farm</xs:documentation>
+        </xs:annotation>
+			</xs:element>
+      <xs:element ref="FarmName" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">農場名称</xs:documentation>
+          <xs:documentation xml:lang="en">Name of farm</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="FarmerID" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">農家ID：正整数値</xs:documentation>
+          <xs:documentation xml:lang="en">A numeric code that identifies farmer ( farm owner )</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="FarmerCode" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">農家コード：文字列</xs:documentation>
+          <xs:documentation xml:lang="en">A literal code that identifies farmer ( farm owner )</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+			<xs:element ref="FarmerName" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation xml:lang="ja">農家名</xs:documentation>
+          <xs:documentation xml:lang="en">Name of farmer ( farm owner )</xs:documentation>
+        </xs:annotation>
+			</xs:element>
+      <xs:element ref="Address" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">農場の住所等</xs:documentation>
+          <xs:documentation xml:lang="en">Address information of farm</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="Contact" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">農場の連絡先情報</xs:documentation>
+          <xs:documentation xml:lang="en">Contact information of farm</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="FileID" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">このドキュメントインスタンスに対応するPMSの管理ファイル識別コード</xs:documentation>
+          <xs:documentation xml:lang="ja">Numeric ID related to this XML document instance defined in PMS</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="FileName" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">前項管理ファイルコードに対応する管理ファイルの識別名称</xs:documentation>
+          <xs:documentation xml:lang="en">File name of farm management data set</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="Note" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">農場についての備考・任意のメモ</xs:documentation>
+          <xs:documentation xml:lang="en">Any notes about farm</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="FarmGuid" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">農場を識別するGUIDコード</xs:documentation>
+          <xs:documentation xml:lang="en">A literal guid that identifies farm</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="FileGuid" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">対応する管理ファイルを識別するGUIDコード</xs:documentation>
+          <xs:documentation xml:lang="en">A literal guid that identifies farm management data set</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+    <xs:attributeGroup ref="acls">
+      <xs:annotation>
+        <xs:documentation xml:lang="ja">この要素のアクス件情報を保持します。</xs:documentation>
+        <xs:documentation xml:lang="en">Store access control designator of this element</xs:documentation>
+      </xs:annotation>
+    </xs:attributeGroup>
+  </xs:complexType>
+  <!--農場要素-->
+	<xs:element name="Farm" type="farmType">
+		<xs:annotation>
+			<xs:documentation xml:lang="ja">農場情報要素です（→ farmType型）</xs:documentation>
+      <xs:documentation xml:lang="en">Store farm infomation in the form of "farmType" type</xs:documentation>
+		</xs:annotation>
+  </xs:element>
+
+  <!--台帳情報-->
+  
+  <!--土地台帳：単一圃場情報型-->
+	<!-- 部分圃場要素 -->
+	<xs:element name="PartField">
+		<xs:annotation>
+			<xs:documentation xml:lang="ja">「部分圃場」要素です。通常，耕作圃場内の分筆区画や合筆圃場内の地主別区画を保持します。また，圃場内を細分化して管理したい場合にも使用します。</xs:documentation>
+      <xs:documentation xml:lang="en">Stores information about partial block of field</xs:documentation>
+		</xs:annotation>
+    <!-- 部分圃場型 -->
+    <xs:complexType>
+      <xs:annotation>
+        <xs:documentation xml:lang="ja">部分圃場タイプを定義しています on 25-May-2012 by D.J.</xs:documentation>
+        <xs:documentation xml:lang="en">Defines data structure of partial field information</xs:documentation>
+      </xs:annotation>
+      <xs:sequence>
+        <xs:element ref="FieldID" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">圃場連番値（シリアル番号）</xs:documentation>
+            <xs:documentation xml:lang="en">Serial number assigned to each field</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element ref="FieldCode" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">圃場コード</xs:documentation>
+            <xs:documentation xml:lang="en">Literal code assigned to each field</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="ParentFieldID" type="positiveCodeType" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">この「部分圃場（区画）」を保持する親圃場ID（連番値）を保持します</xs:documentation>
+            <xs:documentation xml:lang="en">Stores the ID of parent field</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element ref="FieldNumber" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">地番</xs:documentation>
+            <xs:documentation xml:lang="en">Lot number of each field</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element ref="FieldName" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">地名（圃場名）</xs:documentation>
+            <xs:documentation xml:lang="en">Name of field</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element ref="RegisteredArea" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">地籍（登記）面積</xs:documentation>
+            <xs:documentation xml:lang="en">Cadastral acreage</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element ref="CultivateArea" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">耕作面積・水張り面積</xs:documentation>
+            <xs:documentation xml:lang="en">Tillage acreage</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element ref="OwnerID" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">地主（圃場所有者）ID：農家・組織マスタの PersonID を引用</xs:documentation>
+            <xs:documentation xml:lang="en">Numerical Identifier assigned to the owner of field</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element ref="OwnerCode" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">地主（圃場所有者）コード：農家・組織マスタの PersonalCode を引用</xs:documentation>
+            <xs:documentation xml:lang="en">Literal code assigned to the owner of field</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element ref="OwnerName" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">地主名</xs:documentation>
+            <xs:documentation xml:lang="en">Owner name of field</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element ref="WorkerID" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">耕作担当者ID：農家・組織マスタの PersonID を引用</xs:documentation>
+            <xs:documentation xml:lang="en">Numerical identifier assigned to the tiller of field</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element ref="WorkerCode" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">耕作担当者コード</xs:documentation>
+            <xs:documentation xml:lang="en">Literal code assigned to the tiller of field</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element ref="WorkerName" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">耕作担当者名</xs:documentation>
+            <xs:documentation xml:lang="en">Tiller name of field</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element ref="MowerID" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">畦畔管理担当者ID：農家・組織マスタの PersonID を引用</xs:documentation>
+            <xs:documentation xml:lang="en">Numerical identifier assigned to the mowing worker of field</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element ref="MowerCode" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">畦畔管理担当者コード</xs:documentation>
+            <xs:documentation xml:lang="en">Literal code assigned to the mowing worker of field</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element ref="MowerName" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">畦畔管理者名</xs:documentation>
+            <xs:documentation xml:lang="en">Name of the mowing worker of field</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element ref="IrrigatorID" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">水管理担当者ID：農家・組織マスタの PersonID を引用</xs:documentation>
+            <xs:documentation xml:lang="en">Numerical identifier assigned to the irrgating worker of field</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element ref="IrrigatorCode" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">水管理担当者コード</xs:documentation>
+            <xs:documentation xml:lang="en">Literal code assigned to the irrgating worker of field</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element ref="IrrigatorName" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">水管理担当者名</xs:documentation>
+            <xs:documentation xml:lang="en">Name of the irrigating worker of field</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element ref="JAN" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">圃場を識別するJAN相当コード（最大20文字）</xs:documentation>
+            <xs:documentation xml:lang="en">JAN code assigned to each field</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element ref="Note" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">備考・任意のメモ</xs:documentation>
+            <xs:documentation xml:lang="en">Note, comment and so on</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element ref="SpatialData" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">圃場区画の空間データ</xs:documentation>
+            <xs:documentation xml:lang="en">Spatial data of each field</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element ref="PartFields" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">圃場内の部分区画</xs:documentation>
+            <xs:documentation xml:lang="en">Partial fields in each field if any</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+      </xs:sequence>
+      <xs:attributeGroup ref="acls">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">この要素のアクス件情報を保持します。</xs:documentation>
+          <xs:documentation xml:lang="en">Store access control designator of this element</xs:documentation>
+        </xs:annotation>
+      </xs:attributeGroup>
+    </xs:complexType>
+  </xs:element>
+	<!-- 部分圃場コンテナ要素 -->
+	<xs:element name="PartFields">
+		<xs:annotation>
+			<xs:documentation xml:lang="ja">「部分圃場」コンテナです。圃場内の複数の部分圃場を保持します。</xs:documentation>
+      <xs:documentation xml:lang="en">Stores information of partial fields</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+        <xs:element ref="PartField" maxOccurs="unbounded">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">部分圃場情報</xs:documentation>
+            <xs:documentation xml:lang="en">Part field information</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<!-- 単一圃場型 -->
+  <xs:complexType name="fieldType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">「圃場」タイプを定義しています</xs:documentation>
+      <xs:documentation xml:lang="en">Defines "field" information data type</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element ref="FieldID" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">圃場連番値（シリアル番号）</xs:documentation>
+          <xs:documentation xml:lang="en">Serial number assigned to each field</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="FieldCode" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">圃場コード</xs:documentation>
+          <xs:documentation xml:lang="en">Literal code assigned to each field</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="FieldNumber" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">地番</xs:documentation>
+          <xs:documentation xml:lang="en">Lot number of each field</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="FieldName" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">地名（圃場名）</xs:documentation>
+          <xs:documentation xml:lang="en">Name of field</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="RegisteredArea" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">地籍（登記）面積</xs:documentation>
+          <xs:documentation xml:lang="en">Cadastral acreage</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="CultivateArea">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">耕作面積・水張り面積</xs:documentation>
+          <xs:documentation xml:lang="en">Tillage acreage</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="OwnerID" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">地主（圃場所有者）ID：農家・組織マスタの PersonID を引用</xs:documentation>
+          <xs:documentation xml:lang="en">Numerical Identifier assigned to the owner of field</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="OwnerCode" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">地主（圃場所有者）コード：農家・組織マスタの PersonalCode を引用</xs:documentation>
+          <xs:documentation xml:lang="en">Literal code assigned to the owner of field</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="OwnerName" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">地主名</xs:documentation>
+          <xs:documentation xml:lang="en">Owner name of field</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="WorkerID" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">耕作担当者ID：農家・組織マスタの PersonID を引用</xs:documentation>
+          <xs:documentation xml:lang="en">Numerical identifier assigned to the tiller of field</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="WorkerCode" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">耕作担当者コード</xs:documentation>
+          <xs:documentation xml:lang="en">Literal code assigned to the tiller of field</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="WorkerName" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">耕作担当者名</xs:documentation>
+          <xs:documentation xml:lang="en">Tiller name of field</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="MowerID" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">畦畔管理担当者ID：農家・組織マスタの PersonID を引用</xs:documentation>
+          <xs:documentation xml:lang="en">Numerical identifier assigned to the mowing worker of field</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="MowerCode" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">畦畔管理担当者コード</xs:documentation>
+          <xs:documentation xml:lang="en">Literal code assigned to the mowing worker of field</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="MowerName" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">畦畔管理者名</xs:documentation>
+          <xs:documentation xml:lang="en">Name of the mowing worker of field</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="IrrigatorID" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">水管理担当者ID：農家・組織マスタの PersonID を引用</xs:documentation>
+          <xs:documentation xml:lang="en">Numerical identifier assigned to the irrgating worker of field</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="IrrigatorCode" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">水管理担当者コード</xs:documentation>
+          <xs:documentation xml:lang="en">Literal code assigned to the irrgating worker of field</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="IrrigatorName" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">水管理担当者名</xs:documentation>
+          <xs:documentation xml:lang="en">Name of the irrigating worker of field</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="ZoneName" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">地区名（大字など）</xs:documentation>
+          <xs:documentation xml:lang="en">Name of large block of field</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="SubZoneName" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">地区詳細名（小字など）</xs:documentation>
+          <xs:documentation xml:lang="en">Name of small block of field</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="IrrgAreaName" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">水域・水系名</xs:documentation>
+          <xs:documentation xml:lang="en">Name of irrgation area and system</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="JAN" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">圃場を識別するJAN相当コード（最大20文字）</xs:documentation>
+          <xs:documentation xml:lang="en">JAN code assigned to each field</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="Note" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">備考・任意のメモ</xs:documentation>
+          <xs:documentation xml:lang="en">Note, comment and so on</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="SpatialData" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">圃場区画の空間データ</xs:documentation>
+          <xs:documentation xml:lang="en">Spatial data of each field</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="PartFields" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">圃場内の部分区画</xs:documentation>
+          <xs:documentation xml:lang="en">Partial fields in each field if any</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+    <xs:attributeGroup ref="acls">
+      <xs:annotation>
+        <xs:documentation xml:lang="ja">この要素のアクス件情報を保持します。</xs:documentation>
+        <xs:documentation xml:lang="en">Store access control designator of this element</xs:documentation>
+      </xs:annotation>
+    </xs:attributeGroup>
+  </xs:complexType>
+  <!--単一圃場情報要素-->
+	<xs:element name="Field" type="fieldType">
+		<xs:annotation>
+			<xs:documentation xml:lang="ja">単一の圃場情報要素です（→ fieldType型）</xs:documentation>
+      <xs:documentation xml:lang="en">Store field information</xs:documentation>
+		</xs:annotation>
+  </xs:element>
+	<!--圃場群要素-->
+	<xs:element name="Fields">
+		<xs:annotation>
+			<xs:documentation xml:lang="ja">単一圃場要素の繰り返し</xs:documentation>
+      <xs:documentation xml:lang="en">Container of field information</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+        <xs:element ref="Field" maxOccurs="unbounded">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">圃場情報を保持します。</xs:documentation>
+            <xs:documentation xml:lang="en">Stores each field information in &lt;Field&gt; element</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+			</xs:sequence>
+			<xs:attributeGroup ref="acls">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">この要素のアクス件情報を保持します。</xs:documentation>
+          <xs:documentation xml:lang="en">Store access control designator of this element</xs:documentation>
+        </xs:annotation>
+      </xs:attributeGroup>
+		</xs:complexType>
+	</xs:element>
+
+  <!--作付・土地利用台帳-->
+  <xs:complexType name="cultivationType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">「栽培（作付，土地利用情報）」タイプを定義しています</xs:documentation>
+      <xs:documentation xml:lang="en">Defines data structure of cultivation(plot) information</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element ref="FieldID">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">作付対象圃場の圃場番号：圃場情報（Field要素）のFieldIDを引用</xs:documentation>
+          <xs:documentation xml:lang="en">Positive numeric identifier of field</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="FieldCode" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">圃場コード：圃場を識別するコード文字列（対人用）</xs:documentation>
+          <xs:documentation xml:lang="en">String coded identifier of field</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="CroppingNo">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">対象圃場の作付番号（正整数）</xs:documentation>
+          <xs:documentation xml:lang="en">Positive numeric identifier of croping No.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+			<xs:element ref="CroppingName" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation xml:lang="ja">作付け名（文字列：最大20文字）</xs:documentation>
+          <xs:documentation xml:lang="en">Cropping name</xs:documentation>
+        </xs:annotation>
+			</xs:element>
+      <xs:element ref="CropID" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">作付けられている作物コード（正整数）：作物情報（Crop要素）のCropIDを引用</xs:documentation>
+          <xs:documentation xml:lang="en">Positive numeric identifier of crop</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="CropCode" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">作物コード（文字列型）</xs:documentation>
+          <xs:documentation xml:lang="en">String coded identifier of crop</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="VarietyID" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">作付けられている品種コード（正整数）：作物情報（Crop要素）のVarietyIDを引用</xs:documentation>
+          <xs:documentation xml:lang="en">Positive numeric identifier of crop variety</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="VarietyCode" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">品種コード（文字列型）</xs:documentation>
+          <xs:documentation xml:lang="en">String coded identifier of crop variety</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="VarietyName" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">品種名</xs:documentation>
+          <xs:documentation xml:lang="en">Crop variety name</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <!-- 作型参照要素 added on 29-Aug-2014 by D.J. -->
+      <xs:element ref="CroppingTypeID" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">作付の作型コード（正整数）：作型情報（CroppingType要素）のCroppingTypeIDを引用</xs:documentation>
+          <xs:documentation xml:lang="en">Positive numeric identifier of croping type(cultivation system)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="CroppingTypeCode" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">作型コード（文字列型）</xs:documentation>
+          <xs:documentation xml:lang="en">String coded identifier of crop variety</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="CroppingTypeName" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">作型名</xs:documentation>
+          <xs:documentation xml:lang="en">Name of cropping type(cultivation system)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="CroppingYear" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">作付年</xs:documentation>
+          <xs:documentation xml:lang="en">Year of cultivation is hold</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="CroppingStart" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">作付開始日</xs:documentation>
+          <xs:documentation xml:lang="en">Date on cropping is started, typically date on seeding or transplanting</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="CroppingEnd" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">作付終了日</xs:documentation>
+          <xs:documentation xml:lang="en">Date on cropping is finished, typically date on harvesting</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="CroppingArea" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">作付面積</xs:documentation>
+          <xs:documentation xml:lang="en">Cropping area ( area of field use )</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="Yield10a" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">反当収量(既定：kg)</xs:documentation>
+          <xs:documentation xml:lang="en">Every 10a yield of crop</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="Yield" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">圃場全刈り収量(既定：kg)</xs:documentation>
+          <xs:documentation xml:lang="en">Gross yield of crop, default unit is [kg]</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="Note" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">任意のメモ</xs:documentation>
+          <xs:documentation xml:lang="en">Any notes and comments relevant to cultivation</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="MeasuredData" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">定点連続計測データ</xs:documentation>
+          <xs:documentation xml:lang="en">Stationary observation data</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="DeptName" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">作付（栽培）部門名</xs:documentation>
+          <xs:documentation xml:lang="en">Department name of cropping</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="UnitPrice" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">収穫物単価（既定：円/kg）</xs:documentation>
+          <xs:documentation xml:lang="en">Unit price of crop, default unit string is [JPY/kg].</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+    <xs:attributeGroup ref="acls">
+      <xs:annotation>
+        <xs:documentation xml:lang="ja">この要素のアクス件情報を保持します。</xs:documentation>
+        <xs:documentation xml:lang="en">Store access control designator of this element</xs:documentation>
+      </xs:annotation>
+    </xs:attributeGroup>
+  </xs:complexType>
+  <!--単一作付情報要素-->
+	<xs:element name="Cultivation" type="cultivationType">
+		<xs:annotation>
+			<xs:documentation xml:lang="ja">単一の作付・土地利用情報要素です</xs:documentation>
+      <xs:documentation xml:lang="en">Cultivation data for each field</xs:documentation>
+		</xs:annotation>
+  </xs:element>
+  <!--副産物作付情報要素-->
+  <xs:element name="SecondaryCultivation">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">副産物についての情報要素です。主作付は圃場・作付番号で参照します。</xs:documentation>
+      <xs:documentation xml:lang="en">Describes secondary product of cropping</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="FieldID">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">作付対象圃場の圃場番号：圃場情報（Field要素）のFieldIDを引用</xs:documentation>
+            <xs:documentation xml:lang="en">Positive numeric identifier of field</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element ref="FieldCode" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">圃場コード：圃場を識別するコード文字列（対人用）</xs:documentation>
+            <xs:documentation xml:lang="en">String coded identifier of field</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element ref="CroppingNo">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">対象圃場の作付番号（正整数）</xs:documentation>
+            <xs:documentation xml:lang="en">Positive numeric identifier of croping No.</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element ref="UnitPrice" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">副産物単価（既定：円/kg）</xs:documentation>
+            <xs:documentation xml:lang="en">Unit price of secondary crop, default unit string is [JPY/kg].</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element ref="Yield10a" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">反当収量(既定：kg)</xs:documentation>
+            <xs:documentation xml:lang="en">Every 10a yield of crop</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <!--旬別売り上げ情報要素-->
+  <xs:element name="YieldBy10Days">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja"></xs:documentation>
+      <xs:documentation xml:lang="en"></xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="FieldID">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">作付対象圃場の圃場番号：圃場情報（Field要素）のFieldIDを引用</xs:documentation>
+            <xs:documentation xml:lang="en">Positive numeric identifier of field</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element ref="FieldCode" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">圃場コード：圃場を識別するコード文字列（対人用）</xs:documentation>
+            <xs:documentation xml:lang="en">String coded identifier of field</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element ref="CroppingNo">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">対象圃場の作付番号（正整数）</xs:documentation>
+            <xs:documentation xml:lang="en">Positive numeric identifier of croping No.</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="YieldPer10days" type="yieldType" minOccurs="0" maxOccurs="36">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">売り上げ旬別情報</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <!--日別売り上げ情報要素-->
+  <xs:element name="YieldByDays">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja"></xs:documentation>
+      <xs:documentation xml:lang="en"></xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="FieldID">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">作付対象圃場の圃場番号：圃場情報（Field要素）のFieldIDを引用</xs:documentation>
+            <xs:documentation xml:lang="en">Positive numeric identifier of field</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element ref="FieldCode" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">圃場コード：圃場を識別するコード文字列（対人用）</xs:documentation>
+            <xs:documentation xml:lang="en">String coded identifier of field</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element ref="CroppingNo">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">対象圃場の作付番号（正整数）</xs:documentation>
+            <xs:documentation xml:lang="en">Positive numeric identifier of croping No.</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="YieldPerDay" minOccurs="0" maxOccurs="36">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">日別売り上げ情報</xs:documentation>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="YieldDate" type="xs:date" minOccurs="0"/>
+              <xs:element name="Yield" type="yieldType" minOccurs="0"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <!--作付群要素-->
+	<xs:element name="Cultivations">
+		<xs:annotation>
+			<xs:documentation xml:lang="ja">単一作付要素の繰り返し（コンテナ要素）です</xs:documentation>
+      <xs:documentation xml:lang="en">Contains multiple cropping data, cultivation data and field use data</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+        <xs:element ref="Cultivation" maxOccurs="unbounded">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">作付（土地・区画利用）データ</xs:documentation>
+            <xs:documentation xml:lang="en">Cultivation data stored in &lt;Cultivation&gt; element</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element ref="SecondaryCultivation" minOccurs="0" maxOccurs="unbounded">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">副産物情報</xs:documentation>
+            <xs:documentation xml:lang="en">Secondary product of cropping</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element ref="YieldBy10Days" minOccurs="0" maxOccurs="unbounded">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">売り上げ旬別情報</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element ref="YieldByDays" minOccurs="0" maxOccurs="unbounded">
+          <!-- 技術体系DBインタフェイス打ち合わせ・調整に伴い追加 on 17-Jan-2016 by D.J. -->
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">売上日別情報</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+			</xs:sequence>
+			<xs:attributeGroup ref="acls">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">この要素のアクス件情報を保持します。</xs:documentation>
+          <xs:documentation xml:lang="en">Store access control designator of this element</xs:documentation>
+        </xs:annotation>
+      </xs:attributeGroup>
+		</xs:complexType>
+	</xs:element>
+
+  <!--土壌管理台帳-->
+	<xs:element name="SoilDatum" type="fieldNumericDataType">
+		<xs:annotation>
+			<xs:documentation xml:lang="ja">「土壌成分」情報要素です（→ fieldNumericDataType型）</xs:documentation>
+      <xs:documentation xml:lang="en">Soil diagnostic data for each field as &lt;fieldNumericDataType&gt; data type</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="SoilData">
+		<xs:annotation>
+			<xs:documentation xml:lang="ja">単一土壌成分要素の繰り返し（コンテナ要素）です</xs:documentation>
+      <xs:documentation xml:lang="en">Contains multiple soil diagnostic data</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+        <xs:element ref="SoilDatum" maxOccurs="unbounded">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">品質管理データ</xs:documentation>
+            <xs:documentation xml:lang="en">Soil diagnostic data stored in &lt;QualityDatum&gt; element</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+			</xs:sequence>
+			<xs:attributeGroup ref="acls">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">この要素のアクス件情報を保持します。</xs:documentation>
+          <xs:documentation xml:lang="en">Store access control designator of this element</xs:documentation>
+        </xs:annotation>
+      </xs:attributeGroup>
+		</xs:complexType>
+	</xs:element>
+
+  <!--品質管理台帳-->
+	<xs:element name="QualityDatum" type="fieldNumericDataType">
+		<xs:annotation>
+			<xs:documentation xml:lang="ja">「品質管理値」情報要素です（→ fieldNumericDataType型）</xs:documentation>
+      <xs:documentation xml:lang="en">Crop quality control data for each field as &lt;fieldNumericDataType&gt; data type</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="QualityData">
+		<xs:annotation>
+			<xs:documentation xml:lang="ja">単一品質要素の繰り返し（コンテナ要素）です</xs:documentation>
+      <xs:documentation xml:lang="en">Contains multiple crop quality data</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+        <xs:element ref="QualityDatum" maxOccurs="unbounded">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">品質管理データ</xs:documentation>
+            <xs:documentation xml:lang="en">Crop quality data stored in &lt;QualityDatum&gt; element</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+			</xs:sequence>
+			<xs:attributeGroup ref="acls">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">この要素のアクス件情報を保持します。</xs:documentation>
+          <xs:documentation xml:lang="en">Store access control designator of this element</xs:documentation>
+        </xs:annotation>
+      </xs:attributeGroup>
+		</xs:complexType>
+	</xs:element>
+
+  <!--生育管理台帳-->
+	<xs:element name="GrowthDatum">
+		<xs:annotation>
+			<xs:documentation xml:lang="ja">単一の生育データ要素です</xs:documentation>
+      <xs:documentation xml:lang="en">Growing data of crop in field</xs:documentation>
+		</xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="FieldID">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">圃場連番値（シリアル番号）</xs:documentation>
+            <xs:documentation xml:lang="en">Serial number assigned to each field</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element ref="CropID">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">作物・品種識別値</xs:documentation>
+            <xs:documentation xml:lang="en">Numeric identifier of crop</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element ref="RecDate">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">記録作成・登録日</xs:documentation>
+            <xs:documentation xml:lang="en">Record date on data created</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element ref="UserData">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">ユーザ定義による生育管理データ項目</xs:documentation>
+            <xs:documentation xml:lang="en">Crop growing data defined by user in &lt;UserDataDef&gt; element</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element ref="WorkNo" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">作業識別番号（連番値：正整数）：作業繰り返し等を識別するための管理用番号（PMS内部処理用：ユーザは通常意識する必要は無い）</xs:documentation>
+            <xs:documentation xml:lang="en">Positive numerical identifier of farm work record</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <!-- added on 04-Jul-2012 by D.J. 作業台帳上の作業データとのリンク用 -->
+      </xs:sequence>
+      <xs:attributeGroup ref="acls">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">この要素のアクセス権情報を保持します。</xs:documentation>
+          <xs:documentation xml:lang="en">Stores access control designator of this element</xs:documentation>
+        </xs:annotation>
+      </xs:attributeGroup>
+    </xs:complexType>
+  </xs:element>
+	<xs:element name="GrowthData">
+		<xs:annotation>
+			<xs:documentation xml:lang="ja">生育データ管理項目（要素）の繰り返し（コンテナ要素）です</xs:documentation>
+      <xs:documentation xml:lang="en">Contains multiple crop growing data</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+        <xs:element ref="GrowthDatum" maxOccurs="unbounded">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">生育データ項目：ユーザ定義型の任意のデータ項目を格納します。</xs:documentation>
+            <xs:documentation xml:lang="en">Crop growing data that have user defined data type</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+			</xs:sequence>
+			<xs:attributeGroup ref="acls">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">この要素のアクセス件情報を保持します。</xs:documentation>
+          <xs:documentation xml:lang="en">Store access control designator of this element</xs:documentation>
+        </xs:annotation>
+      </xs:attributeGroup>
+		</xs:complexType>
+	</xs:element>
+
+  <!-- 流通経費台帳 -->
+  <xs:element name="DistributionExpense">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">流通経費情報</xs:documentation>
+      <xs:documentation xml:lang="en">Expense for distribution of product</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="FieldID" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">圃場連番値（シリアル番号）</xs:documentation>
+            <xs:documentation xml:lang="en">Serial number assigned to each field</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element ref="FieldCode" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">圃場コード</xs:documentation>
+            <xs:documentation xml:lang="en">Literal code assigned to each field</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="ExpenseItemName" type="nameType" minOccurs="0"/>
+        <xs:element name="ExpenseName" type="nameType" minOccurs="0"/>
+        <xs:element name="ExpenseType" type="nameType" minOccurs="0"/>
+        <xs:element name="UnitExpense" type="priceType" minOccurs="0"/>
+      </xs:sequence>
+      <xs:attributeGroup ref="acls">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">この要素のアクセス権情報を保持します。</xs:documentation>
+          <xs:documentation xml:lang="en">Stores access control designator of this element</xs:documentation>
+        </xs:annotation>
+      </xs:attributeGroup>
+    </xs:complexType>
+  </xs:element>
+	<xs:element name="DistributionExpenses">
+		<xs:annotation>
+			<xs:documentation xml:lang="ja">流通経費情報項目（要素）の繰り返し（コンテナ要素）です</xs:documentation>
+      <xs:documentation xml:lang="en">Contains multiple distribution expense data</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+        <xs:element ref="DistributionExpense" maxOccurs="unbounded">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">流通経費情報</xs:documentation>
+            <xs:documentation xml:lang="en">Expense for distribution of product</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+			</xs:sequence>
+			<xs:attributeGroup ref="acls">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">この要素のアクセス件情報を保持します。</xs:documentation>
+          <xs:documentation xml:lang="en">Store access control designator of this element</xs:documentation>
+        </xs:annotation>
+      </xs:attributeGroup>
+		</xs:complexType>
+	</xs:element>
+
+  <!-- 副収益台帳 -->
+  <xs:element name="OtherProfit">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">副収益情報</xs:documentation>
+      <xs:documentation xml:lang="en">Secondary profit information</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="FieldID" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">圃場連番値（シリアル番号）</xs:documentation>
+            <xs:documentation xml:lang="en">Serial number assigned to each field</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element ref="FieldCode" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">圃場コード</xs:documentation>
+            <xs:documentation xml:lang="en">Literal code assigned to each field</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="ProfitCode" type="stringCodeType" minOccurs="0"/>
+        <xs:element ref="FormUnit" minOccurs="0"/>
+        <xs:element name="Profit10Days" type="stringCodeType" minOccurs="0"/>
+        <xs:element name="ProfitAmountPerUnit" type="priceType" minOccurs="0"/>
+        <xs:element name="ProfitClassification" type="xs:normalizedString" minOccurs="0"/>
+        <xs:element name="ProfitItemName" type="nameType" minOccurs="0"/>
+      </xs:sequence>
+      <xs:attributeGroup ref="acls">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">この要素のアクセス権情報を保持します。</xs:documentation>
+          <xs:documentation xml:lang="en">Stores access control designator of this element</xs:documentation>
+        </xs:annotation>
+      </xs:attributeGroup>
+    </xs:complexType>
+  </xs:element>
+	<xs:element name="OtherProfits">
+		<xs:annotation>
+			<xs:documentation xml:lang="ja">副収益情報項目（要素）の繰り返し（コンテナ要素）です</xs:documentation>
+      <xs:documentation xml:lang="en">Contains multiple benefits data</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+        <xs:element ref="OtherProfit" maxOccurs="unbounded">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">副収益情報</xs:documentation>
+            <xs:documentation xml:lang="en">Secondary profit information</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+			</xs:sequence>
+			<xs:attributeGroup ref="acls">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">この要素のアクセス件情報を保持します。</xs:documentation>
+          <xs:documentation xml:lang="en">Store access control designator of this element</xs:documentation>
+        </xs:annotation>
+      </xs:attributeGroup>
+		</xs:complexType>
+	</xs:element>
+
+  <!--////////////-->
+	<!-- ルート要素 -->
+  <!--////////////-->
+
+  <xs:element name="FIX-pms">
+		<xs:annotation>
+      <xs:documentation xml:lang="ja">FIX-pms文書のルートノードです</xs:documentation>
+      <xs:documentation xml:lang="en">Root node of this FIX-pms document</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+      <!-- Elements sequence -->
+			<xs:sequence>
+				<!--header-meta-->
+				<xs:element ref="Author">
+					<xs:annotation>
+						<xs:documentation xml:lang="ja">文書作成者（オーナ）情報を格納します［必須項目］</xs:documentation>
+            <xs:documentation xml:lang="en">Author of this document instance</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+        <xs:element ref="AuthorDetail" minOccurs="0">
+          <!-- Added on 30-Dec-2015 by D.J. according to FSDB xml interface extensions -->
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">作成者の詳細プロフィール［任意項目］</xs:documentation>
+            <xs:documentation xml:lang="en">Detail of author's profile</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+				<xs:element ref="Create">
+					<xs:annotation>
+						<xs:documentation xml:lang="ja">文書作成日時を格納します［必須項目］</xs:documentation>
+            <xs:documentation xml:lang="en">Date on this document is created</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element ref="Update" minOccurs="0">
+					<xs:annotation>
+						<xs:documentation xml:lang="ja">文書更新日時を格納します［任意］</xs:documentation>
+            <xs:documentation xml:lang="en">Date on this document is updated</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element ref="Generator" minOccurs="0">
+					<xs:annotation>
+						<xs:documentation xml:lang="ja">文書生成ツール情報を格納します［任意］</xs:documentation>
+            <xs:documentation xml:lang="en">Generator of this document</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element ref="Version" minOccurs="0">
+					<xs:annotation>
+						<xs:documentation xml:lang="ja">文書バージョン情報を格納します［任意］</xs:documentation>
+            <xs:documentation xml:lang="en">Version information of this document</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element ref="Credit" minOccurs="0">
+					<xs:annotation>
+						<xs:documentation xml:lang="ja">文書著作権情報を格納します［任意］</xs:documentation>
+            <xs:documentation xml:lang="en">Credit information of this document</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element ref="Note" minOccurs="0">
+					<xs:annotation>
+						<xs:documentation xml:lang="ja">文書の任意コメント・備考を格納します［任意］</xs:documentation>
+            <xs:documentation xml:lang="en">Any notes and comments on this document</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+        <xs:element ref="Guid" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">この文書のGUIDを格納します［任意］</xs:documentation>
+            <xs:documentation xml:lang="en">GUID of this document</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+				<!--Node:Farm-->
+				<xs:element ref="Farm" minOccurs="0">
+					<xs:annotation>
+						<xs:documentation xml:lang="ja">「農場」全体の情報（組織情報などを想定）を格納します</xs:documentation>
+            <xs:documentation xml:lang="en">Profile information of the farm described in this document</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<!--Master-->
+        <xs:element ref="MasterContents" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">PMSマスターデータコンテンツを格納します</xs:documentation>
+            <xs:documentation xml:lang="en">Master data contents on members, crops, works, materials, products and so on</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+				<!--Ledger-->
+				<xs:element ref="Fields" minOccurs="0">
+					<xs:annotation>
+						<xs:documentation xml:lang="ja">PMS土地台帳情報を格納します</xs:documentation>
+            <xs:documentation xml:lang="en">Field information managed by this farm</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element ref="Cultivations" minOccurs="0">
+					<xs:annotation>
+						<xs:documentation xml:lang="ja">PMS作付（土地区画利用）台帳情報を格納します</xs:documentation>
+            <xs:documentation xml:lang="en">Cropping information managed by this farm</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element ref="WorkProcesses" minOccurs="0">
+					<xs:annotation>
+						<xs:documentation xml:lang="ja">PMS栽培作業台帳情報を格納します</xs:documentation>
+            <xs:documentation xml:lang="en">Work result information</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+        <xs:element ref="FacilityUsages" minOccurs="0">
+          <!-- Added on 30-Dec-2015 by D.J. according to FSDB xml interface extensions -->
+          <!-- Modified element name from 'WorkFacilityes' to 'FacilityUsages' on 17-Jan-2016 by D.J. -->
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">一連の施設使用情報を保持します（コンテナ要素）</xs:documentation>
+            <xs:documentation xml:lang="en">Contains multiple facility usage elements as container element</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+				<xs:element ref="GrowthData" minOccurs="0">
+					<xs:annotation>
+						<xs:documentation xml:lang="ja">PMS生育台帳情報を格納します</xs:documentation>
+            <xs:documentation xml:lang="en">Crop growing information</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element ref="SoilData" minOccurs="0">
+					<xs:annotation>
+						<xs:documentation xml:lang="ja">PMS土壌台帳情報を格納します</xs:documentation>
+            <xs:documentation xml:lang="en">Soil diagnosis information</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element ref="QualityData" minOccurs="0">
+					<xs:annotation>
+						<xs:documentation xml:lang="ja">PMS品質台帳情報を格納します</xs:documentation>
+            <xs:documentation xml:lang="en">Crop quality information</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element ref="ProductProcesses" minOccurs="0">
+					<xs:annotation>
+						<xs:documentation xml:lang="ja">PMS生産出荷台帳情報を格納します</xs:documentation>
+            <xs:documentation xml:lang="en">Production result information</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+        <xs:element ref="ProductInfos" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">単一生産物情報データの繰り返し（コンテナ要素）</xs:documentation>
+            <xs:documentation xml:lang="en">Contains multiple &lt;ProductInfo&gt; element as container element</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element ref="DistributionExpenses" minOccurs="0">
+          <!-- Added on 30-Dec-2015 by D.J. according to FSDB xml interface extensions -->
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">流通経費情報項目（要素）の繰り返し（コンテナ要素）です</xs:documentation>
+            <xs:documentation xml:lang="en">Contains multiple distribution expense data</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element ref="OtherProfits" minOccurs="0">
+          <!-- Added on 30-Dec-2015 by D.J. according to FSDB xml interface extensions -->
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">副収益情報項目（要素）の繰り返し（コンテナ要素）です</xs:documentation>
+            <xs:documentation xml:lang="en">Contains multiple benefits data</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element ref="bfd:MIndices" minOccurs="0">
+          <!-- Added on 01-Jan-2016 by D.J. according to BFD_Indices xml interface extensions -->
+          <xs:annotation>
+            <xs:documentation xml:lang="ja">経営指標項目</xs:documentation>
+            <xs:documentation xml:lang="en">Business indexes(indices)</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+			</xs:sequence>
+      <!-- Attributes -->
+			<xs:attributeGroup ref="acls">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">この要素のアクス件情報を保持します。</xs:documentation>
+          <xs:documentation xml:lang="en">Access control designator of this element</xs:documentation>
+        </xs:annotation>
+      </xs:attributeGroup>
+		</xs:complexType>
+	</xs:element>
+
+</xs:schema>

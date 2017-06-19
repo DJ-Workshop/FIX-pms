@@ -1,0 +1,107 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            attributeFormDefault="unqualified"
+            elementFormDefault="qualified"
+            finalDefault="#all"
+            blockDefault="#all"
+            targetNamespace="http://naro.narc.fmd.go.jp/bfd/Income"
+            xmlns:bfdin="http://naro.narc.fmd.go.jp/bfd/Income"
+            xmlns:bfdel="http://naro.narc.fmd.go.jp/bfd/Element"
+            >
+
+  <!--外部スキーマの取り込み-->
+  <xsd:import namespace="http://naro.narc.fmd.go.jp/bfd/Element" schemaLocation="bfd_Element.xsd" />
+
+  <!--スキーマ情報-->
+  <xsd:annotation>
+    <xsd:appinfo>
+      Scheme Version 1.00
+    </xsd:appinfo>
+    <xsd:documentation>
+      収入群用のXMLスキーマ
+    </xsd:documentation>
+  </xsd:annotation>
+
+  <!--収入群のルート要素宣言-->
+  <xsd:element name="Incomes">
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element ref="bfdin:Income" minOccurs="1" maxOccurs="unbounded" />
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+
+  <!--収入の要素宣言-->
+  <xsd:element name="Income">
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element ref="bfdel:MIndexID" minOccurs="0" maxOccurs="1">
+          <xsd:annotation>
+            <xsd:documentation>
+              経営指標要素を参照するための外部キー
+              共通要素スキーマから参照
+            </xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+        <!--収入のサブ要素のモデルグループの参照-->
+        <xsd:group ref="bfdin:GroupIncome" minOccurs="1" maxOccurs="1" />
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+
+  <!--収入のサブ要素のモデルグループ-->
+  <xsd:group name="GroupIncome">
+    <xsd:annotation>
+      <xsd:documentation>
+        MIndeices.xsdへはこれを読み込む？
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <!--収入のサブ要素の参照-->
+      <xsd:element ref="bfdin:Production_10a" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="bfdin:SalePrice_kg" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="bfdin:ByProduct_10a" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="bfdin:Subsidy_kg" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="bfdin:Subsidy_10a" minOccurs="1" maxOccurs="1" />
+    </xsd:sequence>
+  </xsd:group>
+
+
+  <!--収入のサブ項目の要素宣言-->
+  <xsd:element name="Production_10a" type="xsd:decimal" default="0">
+    <xsd:annotation>
+      <xsd:documentation>
+        10a当たり収量（kg)、初期値0kg
+      </xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="SalePrice_kg" type="xsd:decimal" default="0">
+    <xsd:annotation>
+      <xsd:documentation>
+        kg当たり価額（円）、初期値0円
+      </xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="ByProduct_10a" type="xsd:decimal" default="0">
+    <xsd:annotation>
+      <xsd:documentation>
+        10a当たり副産物（円）、初期値0円
+      </xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="Subsidy_kg" type="xsd:decimal" default="0">
+    <xsd:annotation>
+      <xsd:documentation>
+        生産量基準によるkg当たり助成金（円）、初期値0円
+      </xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="Subsidy_10a" type="xsd:decimal" default="0">
+    <xsd:annotation>
+      <xsd:documentation>
+        栽培面積基準による10a当たり助成金（円）、初期値0円
+      </xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+
+</xsd:schema>

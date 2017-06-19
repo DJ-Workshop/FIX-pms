@@ -1,0 +1,293 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+  FIX-pms スキーマ
+	Version 1.0.0.1 on 21-Jul-2011 by D.J.
+	Version 1.0.0.2 on 05-Oct-2011 by D.J.
+	Version 1.0.0.3 on 04-Dec-2012 by D.J.	－－－	主要要素ACL属性追加
+  Version 1.0.0.4 on 13-Jan-2014 by D.J.　－－－　型～要素整理（冗長定義削除）
+  Version 1.0.4.1 on 17-Jun-2015 by D.J.　－－－　文字コード型拡充への対応
+  【生産出荷（ロット管理）データ】
+-->
+
+<xs:schema targetNamespace="http://www.aginfo.jp/PMS/FIX-pms/XMLSchema"
+    elementFormDefault="qualified"
+    xmlns="http://www.aginfo.jp/PMS/FIX-pms/XMLSchema"
+    xmlns:fp="http://www.aginfo.jp/PMS/FIX-pms/XMLSchema"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+>
+  <xs:include schemaLocation="./pmsCommon.xsd"/>
+  <xs:include schemaLocation="./pmsMaster.xsd"/>
+
+  <xs:element name="QualityDataItem" type="numericDataItemType">
+    <xs:annotation>
+			<xs:documentation xml:lang="ja">生産出荷ロットの個別品質情報要素です（→ numericDataItemType型）</xs:documentation>
+      <xs:documentation xml:lang="ja">マスタ定義ファイル内で定義されている'numericDataItemType'を流用して定義</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  
+	<xs:element name="ProductQuality">
+		<xs:annotation>
+			<xs:documentation xml:lang="ja">生産出荷ロットの品質情報要素です</xs:documentation>
+		</xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="QualityDataItem" maxOccurs="unbounded"/>
+      </xs:sequence>
+      <xs:attributeGroup ref="acls">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">この要素のアクス件情報を保持します。</xs:documentation>
+          <xs:documentation xml:lang="en">Store access control designator of this element</xs:documentation>
+        </xs:annotation>
+      </xs:attributeGroup>
+    </xs:complexType>
+  </xs:element>
+
+	<xs:element name="FromFields">
+		<xs:annotation>
+			<xs:documentation xml:lang="ja">ロット構成圃場番号リスト要素です</xs:documentation>
+		</xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="FromField" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+	<xs:element name="FromLots">
+		<xs:annotation>
+			<xs:documentation xml:lang="ja">ロット構成前処理ロット番号リスト要素です</xs:documentation>
+		</xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="FromLot" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+	
+	<xs:element name="ProductSource">
+		<xs:annotation>
+			<xs:documentation xml:lang="ja">ロットの由来情報要素です</xs:documentation>
+		</xs:annotation>
+    <xs:complexType>
+      <!-- xs:choice>
+        <xs:element ref="FromFields" />
+        <xs:element ref="FromLots" />
+      </xs:choice -->
+      <xs:sequence>
+        <xs:element ref="FromFields" minOccurs="0" />           <!-- 'choice' is changed to 'sequence' on 19-Jan-2014 by D.J.  -->
+        <xs:element ref="FromLots" minOccurs="0" />
+      </xs:sequence>
+      <xs:attributeGroup ref="acls">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">この要素のアクス件情報を保持します。</xs:documentation>
+          <xs:documentation xml:lang="en">Store access control designator of this element</xs:documentation>
+        </xs:annotation>
+      </xs:attributeGroup>
+    </xs:complexType>
+  </xs:element>
+
+	<xs:element name="ProductWork">
+		<xs:annotation>
+			<xs:documentation xml:lang="ja">ロット作業情報の参照先情報要素です</xs:documentation>
+		</xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="FieldID" minOccurs="0"/>
+        <xs:element ref="FieldCode" minOccurs="0"/>
+        <xs:element ref="WorkNo"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="ProductWorks">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">ロット作業リスト要素</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="ProductWork" maxOccurs="unbounded" />
+      </xs:sequence>
+      <xs:attributeGroup ref="acls">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">この要素のアクス件情報を保持します。</xs:documentation>
+          <xs:documentation xml:lang="en">Store access control designator of this element</xs:documentation>
+        </xs:annotation>
+      </xs:attributeGroup>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:complexType name="eachCodeType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">製品・商品の個別コード，出荷コード型を定義しています</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="ScanDate" type="xs:dateTime"/>
+      <xs:element name="Code" type="fp:barcodeType"/>
+			<xs:element name="Target" type="fp:barcodeType" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+	<xs:element name="ProductOutCode" type="eachCodeType">
+		<xs:annotation>
+			<xs:documentation xml:lang="ja">製品個別の製品コード情報要素です（→ eachCodeType型）</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="ShippingCode" type="eachCodeType">
+		<xs:annotation>
+			<xs:documentation xml:lang="ja">個別の製品出荷コード情報要素です（→ eachCodeType型）</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:element name="ProductList">
+		<xs:annotation>
+			<xs:documentation xml:lang="ja">単一の製品情報要素です</xs:documentation>
+		</xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="ProductID" minOccurs="0"/>
+        <xs:element ref="ProductCode" minOccurs="0"/>
+        <xs:element ref="ProductDate"/>
+        <xs:element ref="FormID" minOccurs="0"/>
+        <xs:element ref="FormCode" minOccurs="0"/>
+        <xs:element ref="UnitPrice" minOccurs="0"/>
+        <xs:element ref="ProductCount" minOccurs="0"/>
+        <xs:element ref="TotalPrice" minOccurs="0"/>
+        <xs:element ref="JAN" minOccurs="0"/>
+        <xs:element ref="Note" minOccurs="0"/>
+        <xs:element ref="ProductOutCode" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="ProductLists">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">製品情報リスト要素</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="ProductList" maxOccurs="unbounded" />
+      </xs:sequence>
+      <xs:attributeGroup ref="acls">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">この要素のアクス件情報を保持します。</xs:documentation>
+          <xs:documentation xml:lang="en">Store access control designator of this element</xs:documentation>
+        </xs:annotation>
+      </xs:attributeGroup>
+    </xs:complexType>
+  </xs:element>
+
+	<xs:element name="ShippingList">
+		<xs:annotation>
+			<xs:documentation xml:lang="ja">単一の出荷情報要素です</xs:documentation>
+		</xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="ProductID"/>
+        <xs:element ref="ShipDate"/>
+        <xs:element ref="CustomerID" minOccurs="0"/>
+        <xs:element ref="UnitPrice" minOccurs="0"/>
+        <xs:element ref="ProductCount" minOccurs="0"/>
+        <xs:element ref="TotalPrice" minOccurs="0"/>
+        <xs:element ref="Note" minOccurs="0"/>
+        <xs:element ref="ShippingCode" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="ShippingLists">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">出荷情報リスト要素</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="ShippingList" maxOccurs="unbounded" />
+      </xs:sequence>
+      <xs:attributeGroup ref="acls">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">この要素のアクス件情報を保持します。</xs:documentation>
+          <xs:documentation xml:lang="en">Store access control designator of this element</xs:documentation>
+        </xs:annotation>
+      </xs:attributeGroup>
+    </xs:complexType>
+  </xs:element>
+
+	<!--
+    生産出荷台帳情報
+  -->
+  <!-- 型定義 -->
+  <xs:complexType name="productProcessType">
+    <xs:annotation>
+      <xs:documentation xml:lang="ja">生産物調製加工・出荷情報タイプを定義しています</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element ref="LotNo"/>
+      <xs:element ref="CroppingNo"/>
+      <xs:element ref="CropID" minOccurs="0"/>
+      <xs:element ref="CropCode" minOccurs="0"/>
+      <xs:element ref="VarietyID" minOccurs="0"/>
+      <xs:element ref="VarietyCode" minOccurs="0"/>
+      <xs:element ref="RecDate"/>
+      <xs:element ref="ProductYield" minOccurs="0"/>
+      <xs:element ref="ProductArea" minOccurs="0"/>
+      <xs:element ref="ProductYear" minOccurs="0"/>
+      <xs:element ref="Note" minOccurs="0"/>
+      <xs:element ref="ProductSource">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">ロットの構成元（圃場またはロットのリスト）を格納します</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="ProductQuality" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">ロットの品質データ（項目名と値のセット）リストを格納します</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="MachineUsages" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">ロット作業固有の使用機材情報を格納します</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="ProductWorks" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">ロットの個別作業情報（への参照ID）を格納します</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="ProductLists" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">ロットから生産される製品一覧（製品ごとの個別コード込み）を格納します</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element ref="ShippingLists" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">ロットから出荷される製品リスト（製品ごと）を格納します</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+    <xs:attributeGroup ref="acls">
+      <xs:annotation>
+        <xs:documentation xml:lang="ja">この要素のアクス件情報を保持します。</xs:documentation>
+        <xs:documentation xml:lang="en">Store access control designator of this element</xs:documentation>
+      </xs:annotation>
+    </xs:attributeGroup>
+  </xs:complexType>
+  <!--単一生産工程ロットデータ要素-->
+	<xs:element name="ProductProcess" type="productProcessType">
+		<xs:annotation>
+			<xs:documentation xml:lang="ja">単一の生産ロット情報要素です（→ productProcessType型）</xs:documentation>
+		</xs:annotation>
+  </xs:element>
+	<!--生産出荷工程データ群要素-->
+	<xs:element name="ProductProcesses">
+		<xs:annotation>
+			<xs:documentation xml:lang="ja">単一生産出荷工程（ロット）データの繰り返し（コンテナ要素）</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="ProductProcess" maxOccurs="unbounded"/>
+			</xs:sequence>
+			<xs:attributeGroup ref="acls">
+        <xs:annotation>
+          <xs:documentation xml:lang="ja">この要素のアクス件情報を保持します。</xs:documentation>
+          <xs:documentation xml:lang="en">Store access control designator of this element</xs:documentation>
+        </xs:annotation>
+      </xs:attributeGroup>
+		</xs:complexType>
+	</xs:element>
+
+</xs:schema>

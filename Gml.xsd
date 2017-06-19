@@ -1,0 +1,524 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	Copyright © 2007 Kuratorium für Technik und Bauwesen in der Landwirtschaft e.V. (KTBL). All Rights Reserved. http://www.agroxml.de/Legal/
+	
+	This KTBL work (including software, documents, or other related items) is being provided by the copyright holders under the following license.
+	By obtaining, using and/or copying this work, you (the licensee) agree that you have read, understood, and will comply with the following terms and conditions: Permission to use, copy, modify, and distribute this software and its documentation, with or without modification, for any purpose and without fee or royalty is hereby granted, provided that you include the following on ALL copies of the software and documentation or portions thereof, including modifications, that you make:
+	
+	1.	The full text of this NOTICE in a location viewable to users of the redistributed or derivative work.
+	2.	Any pre-existing intellectual property disclaimers, notices, or terms and conditions. If none exist,
+	a short notice of the following form (hypertext is preferred, text is permitted) should be used within
+	the body of any redistributed or derivative code:
+	"Copyright © [$date-of-software] Kuratorium für Technik und Bauwesen in der Landwirtschaft e.V. (KTBL).
+	All Rights Reserved. http://www.agroxml.de/Legal/"
+	3.	Notice of any changes or modifications to the KTBL files, including the date changes were made.
+	(We recommend you provide URIs to the location from which the code is derived.)
+	
+	THIS SOFTWARE AND DOCUMENTATION IS PROVIDED "AS IS," AND COPYRIGHT HOLDERS MAKE NO REPRESENTATIONS OR WARRANTIES, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO, WARRANTIES OF MERCHANTABILITY OR FITNESS FOR ANY PARTICULAR PURPOSE OR THAT THE USE OF THE SOFTWARE OR DOCUMENTATION WILL NOT INFRINGE ANY THIRD PARTY PATENTS, COPYRIGHTS, TRADEMARKS OR OTHER RIGHTS.
+	COPYRIGHT HOLDERS WILL NOT BE LIABLE FOR ANY DIRECT, INDIRECT, SPECIAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF ANY USE OF THE SOFTWARE OR DOCUMENTATION.
+	
+	The name and trademarks of copyright holders may NOT be used in advertising or publicity pertaining to the software without specific, written prior permission. Title to copyright in this software and any associated documentation will at all times remain with copyright holders.
+-->
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://www.opengis.net/gml" xmlns:gml="http://www.opengis.net/gml" xmlns:xlink="http://www.w3.org/1999/xlink" targetNamespace="http://www.opengis.net/gml" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.5">
+	<!-- ==================== import =================== -->
+	<xsd:import namespace="http://www.w3.org/1999/xlink" schemaLocation="Xlinks.xsd"/>
+	<!-- =============================================== -->
+	<xsd:attributeGroup name="AssociationAttributeGroup">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">
+				Attribute group used to enable property elements to
+				refer to their value remotely. It contains the simple
+				link components from xlinks.xsd, with all members
+				optional, and the remoteSchema attribute, which is also
+				optional. These attributes can be attached to any
+				element, thus allowing it to act as a pointer. The
+				'remoteSchema' attribute allows an element that carries
+				link attributes to indicate that the element is declared
+				in a remote schema rather than by the schema that
+				constrains the current document instance.
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:attributeGroup ref="xlink:simpleLink"/>
+		<xsd:attribute name="remoteSchema" type="xsd:anyURI" use="optional">
+			<xsd:annotation>
+				<xsd:documentation xml:lang="en">
+					Reference to an XML Schema fragment that specifies
+					the content model of the propertys value. This is in
+					conformance with the XML Schema Section 4.14
+					Referencing Schemas from Elsewhere.
+				</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:attributeGroup>
+	<xsd:element name="Description">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">
+				Contains a simple text description of the object, or
+				refers to an external description. It is of string type,
+				so the text can be included inline, but the value can
+				also be referenced remotely via xlinks from the
+				AssociationAttributeGroup. If the remote reference is
+				present, then the value obtained by traversing the link
+				should be used, and the string content of the element
+				can be used for an annotation.
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:simpleContent>
+				<xsd:extension base="xsd:string">
+					<xsd:attributeGroup ref="gml:AssociationAttributeGroup"/>
+				</xsd:extension>
+			</xsd:simpleContent>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:simpleType name="DoubleList">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">
+				XML List based on XML Schema double type. An element of
+				this type contains a space-separated list of double
+				values
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:list itemType="xsd:double"/>
+	</xsd:simpleType>
+	<xsd:element name="MetaDataProperty">
+		<xsd:complexType>
+			<xsd:annotation>
+				<xsd:documentation xml:lang="en">
+					Base type for complex metadata property types.
+				</xsd:documentation>
+			</xsd:annotation>
+			<xsd:sequence minOccurs="0">
+				<xsd:any processContents="lax"/>
+			</xsd:sequence>
+			<xsd:attributeGroup ref="gml:AssociationAttributeGroup"/>
+			<xsd:attribute name="about" type="xsd:anyURI" use="optional"/>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:simpleType name="NCNameList">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">
+				A set of values, representing a list of token with the
+				lexical value space of NCName. The tokens are seperated
+				by whitespace.
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:list itemType="xsd:NCName"/>
+	</xsd:simpleType>
+	<xsd:complexType name="CoordinatesType">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">
+				Coordinates can be included in a single string, but
+				there is no facility for validating string content. The
+				value of the 'cs' attribute is the separator for
+				coordinate values, and the value of the 'ts' attribute
+				gives the tuple separator (a single space by default);
+				the default values may be changed to reflect local
+				usage.
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:string">
+				<xsd:attribute name="decimal" type="xsd:string" use="optional" default="."/>
+				<xsd:attribute name="cs" type="xsd:string" use="optional" default=","/>
+				<xsd:attribute name="ts" type="xsd:string" use="optional" default=" "/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:element name="Coordinates" type="gml:CoordinatesType"/>
+	<xsd:complexType name="CoordType">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">
+				Represents a coordinate tuple in one, two, or three
+				dimensions.
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="X" type="xsd:decimal"/>
+			<xsd:element name="Y" type="xsd:decimal" minOccurs="0"/>
+			<xsd:element name="Z" type="xsd:decimal" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element name="Coord" type="gml:CoordType"/>
+	<xsd:complexType name="DirectPositionType">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">
+				DirectPosition instances hold the coordinates for a
+				position within some coordinate reference system (CRS).
+				Since DirectPositions, as data types, will often be
+				included in larger objects (such as geometry elements)
+				that have references to CRS, the "srsName" attribute
+				will in general be missing, if this particular
+				DirectPosition is included in a larger element with such
+				a reference to a CRS. In this case, the CRS is
+				implicitly assumed to take on the value of the
+				containing object's CRS.
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:simpleContent>
+			<xsd:extension base="gml:DoubleList">
+				<xsd:attributeGroup ref="gml:SRSReferenceGroup"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:element name="Pos" type="gml:DirectPositionType"/>
+	<xsd:complexType name="DirectPositionListType">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">
+				DirectPositionList instances hold the coordinates for a
+				sequence of direct positions within the same coordinate
+				reference system (CRS).
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:simpleContent>
+			<xsd:extension base="gml:DoubleList">
+				<xsd:attributeGroup ref="gml:SRSReferenceGroup"/>
+				<xsd:attribute name="count" type="xsd:positiveInteger" use="optional">
+					<xsd:annotation>
+						<xsd:documentation xml:lang="en">
+							"count" allows to specify the number of
+							direct positions in the list. If the
+							attribute count is present then the
+							attribute srsDimension shall be present,
+							too.
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:element name="PosList" type="gml:DirectPositionListType"/>
+	<xsd:attributeGroup name="SRSReferenceGroup">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">
+				Optional reference to the CRS used by this geometry,
+				with optional additional information to simplify use
+				when a more complete definition of the CRS is not
+				needed.
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:attribute name="srsName" type="xsd:anyURI" use="optional">
+			<xsd:annotation>
+				<xsd:documentation xml:lang="en">
+					In general this reference points to a CRS instance
+					of gml:CoordinateReferenceSystemType (see
+					coordinateReferenceSystems.xsd). For well known
+					references it is not required that the CRS
+					description exists at the location the URI points
+					to. If no srsName attribute is given, the CRS must
+					be specified as part of the larger context this
+					geometry element is part of, e.g. a geometric
+					element like point, curve, etc. It is expected that
+					this attribute will be specified at the direct
+					position level only in rare cases.
+				</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="srsDimension" type="xsd:positiveInteger" use="optional">
+			<xsd:annotation>
+				<xsd:documentation xml:lang="en">
+					The "srsDimension" is the length of coordinate
+					sequence (the number of entries in the list). This
+					dimension is specified by the coordinate reference
+					system. When the srsName attribute is omitted, this
+					attribute shall be omitted.
+				</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="axisLabels" type="gml:NCNameList" use="optional">
+			<xsd:annotation>
+				<xsd:documentation xml:lang="en">
+					Ordered list of labels for all the axes of this CRS.
+					The gml:axisAbbrev value should be used for these
+					axis labels, after spaces and forbiddden characters
+					are removed. When the srsName attribute is included,
+					this attribute is optional. When the srsName
+					attribute is omitted, this attribute shall also be
+					omitted.
+				</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="uomLabels" type="gml:NCNameList" use="optional">
+			<xsd:annotation>
+				<xsd:documentation xml:lang="en">
+					Ordered list of unit of measure (uom) labels for all
+					the axes of this CRS. The value of the string in the
+					gml:catalogSymbol should be used for this uom
+					labels, after spaces and forbiddden characters are
+					removed. When the axisLabels attribute is included,
+					this attribute shall also be included. When the
+					axisLabels attribute is omitted, this attribute
+					shall also be omitted.
+				</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:attributeGroup>
+	<xsd:complexType name="LineStringType">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">
+				some explanation
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element ref="gml:MetaDataProperty" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element ref="gml:Description" minOccurs="0"/>
+			<xsd:choice>
+				<xsd:choice minOccurs="2" maxOccurs="unbounded">
+					<xsd:element ref="gml:Pos"/>
+					<xsd:element ref="gml:PointProperty"/>
+					<xsd:element ref="gml:Coord">
+						<xsd:annotation>
+							<xsd:documentation>Deprecated with GML version 3.0. Use "pos" instead. The "coord" element is included for backwards 
+									compatibility with GML 2.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+				</xsd:choice>
+				<xsd:element ref="gml:PosList"/>
+				<xsd:element ref="gml:Coordinates">
+					<xsd:annotation>
+						<xsd:documentation>Deprecated with GML version 3.1.0. Use "posList" instead.</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:choice>
+		</xsd:sequence>
+		<xsd:attribute name="id" type="xsd:ID" use="optional"/>
+		<xsd:attribute name="gid" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation xml:lang="en">
+					This attribute is included for backward
+					compatibility with GML 2 and is deprecated with GML
+					3. This identifer is superceded by "gml:id"
+					inherited from AbstractGMLType. The attribute "gid"
+					should not be used anymore and may be deleted in
+					future versions of GML without further notice.
+				</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attributeGroup ref="gml:SRSReferenceGroup"/>
+	</xsd:complexType>
+	<xsd:element name="LineString" type="gml:LineStringType"/>
+	<xsd:complexType name="LinearRingType">
+		<xsd:sequence>
+			<xsd:element ref="gml:MetaDataProperty" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element ref="gml:Description" minOccurs="0"/>
+			<!--<xsd:element ref="Name" minOccurs="0" maxOccurs="unbounded"/>-->
+			<xsd:choice>
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">
+						GML supports two different ways to specify the
+						control points of a linear ring. 1. A sequence
+						of "pos" (DirectPositionType) or "pointProperty"
+						(PointPropertyType) elements. "pos" elements are
+						control points that are only part of this ring,
+						"pointProperty" elements contain a point that
+						may be referenced from other geometry elements
+						or reference another point defined outside of
+						this ring (reuse of existing points). 2. The
+						"posList" element allows for a compact way to
+						specifiy the coordinates of the control points,
+						if all control points are in the same coordinate
+						reference systems and belong to this ring only.
+						The number of direct positions in the list must
+						be at least four.
+					</xsd:documentation>
+				</xsd:annotation>
+				<xsd:choice minOccurs="4" maxOccurs="unbounded">
+					<xsd:element ref="gml:Pos"/>
+					<xsd:element ref="gml:PointProperty"/>
+				</xsd:choice>
+				<xsd:element ref="gml:PosList"/>
+				<xsd:element ref="gml:Coord" minOccurs="4" maxOccurs="unbounded">
+					<xsd:annotation>
+						<xsd:documentation xml:lang="en">
+							Deprecated with GML 3.0 and included for
+							backwards compatibility with GML 2. Use the
+							"pos" element instead.
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element ref="gml:Coordinates">
+					<xsd:annotation>
+						<xsd:documentation xml:lang="en">
+							Deprecated with GML version 3.1.0. Use
+							"posList" instead.
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:choice>
+		</xsd:sequence>
+		<xsd:attribute name="id" type="xsd:ID" use="optional"/>
+		<xsd:attribute name="gid" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation xml:lang="en">
+					This attribute is included for backward
+					compatibility with GML 2 and is deprecated with GML
+					3. This identifer is superceded by "gml:id"
+					inherited from AbstractGMLType. The attribute "gid"
+					should not be used anymore and may be deleted in
+					future versions of GML without further notice.
+				</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attributeGroup ref="gml:SRSReferenceGroup"/>
+	</xsd:complexType>
+	<xsd:element name="LinearRing" type="gml:LinearRingType"/>
+	<xsd:element name="Exterior">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="de">
+			TODO : bei anderen GML-Dateien wird das von Element 'outerBoundaryIs' gebraucht. Ist semantisch eindeutiger
+			</xsd:documentation>
+			<xsd:documentation xml:lang="en">
+				A boundary of a surface consists of a number of rings.
+				In the normal 2D case, one of these rings is
+				distinguished as being the exterior boundary. In a
+				general manifold this is not always possible, in which
+				case all boundaries shall be listed as interior
+				boundaries, and the exterior will be empty.
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element ref="gml:LinearRing"/>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:element name="Interior">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">
+				A boundary of a surface consists of a number of rings.
+				The "interior" rings seperate the surface / surface
+				patch from the area enclosed by the rings.
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element ref="gml:LinearRing"/>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:element name="Site" type="gml:PointType"/>
+	<xsd:element name="Point" type="gml:PointType"/>
+	<xsd:complexType name="PointType">
+		<xsd:sequence>
+			<xsd:element ref="gml:MetaDataProperty" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element ref="gml:Description" minOccurs="0"/>
+			<!--<xsd:element ref="Name" minOccurs="0" maxOccurs="unbounded"/>-->
+			<xsd:choice>
+				<xsd:element ref="gml:Coord">
+					<xsd:annotation>
+						<xsd:documentation xml:lang="en">
+							Deprecated with GML 3.0 and included for
+							backwards compatibility with GML 2. Use the
+							"pos" element instead.
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element ref="gml:Coordinates">
+					<xsd:annotation>
+						<xsd:documentation xml:lang="en">
+							Deprecated with GML version 3.1.0.
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element ref="gml:Pos"/>
+			</xsd:choice>
+		</xsd:sequence>
+		<xsd:attribute name="id" type="xsd:ID" use="optional"/>
+		<xsd:attribute name="gid" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation xml:lang="en">
+					This attribute is included for backward
+					compatibility with GML 2 and is deprecated with GML
+					3. This identifer is superceded by "gml:id"
+					inherited from AbstractGMLType. The attribute "gid"
+					should not be used anymore and may be deleted in
+					future versions of GML without further notice.
+				</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attributeGroup ref="gml:SRSReferenceGroup"/>
+	</xsd:complexType>
+	<xsd:complexType name="PointPropertyType">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">
+				A property that has a point as its value domain can
+				either be an appropriate geometry element encapsulated
+				in an element of this type or an XLink reference to a
+				remote geometry element (where remote includes geometry
+				elements located elsewhere in the same document). Either
+				the reference or the contained element must be given,
+				but neither both nor none.
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence minOccurs="0">
+			<xsd:element ref="gml:Point"/>
+		</xsd:sequence>
+		<xsd:attributeGroup ref="gml:AssociationAttributeGroup">
+			<xsd:annotation>
+				<xsd:documentation xml:lang="en">
+					This attribute group includes the XLink attributes
+					(see xlinks.xsd). XLink is used in GML to reference
+					remote resources (including those elsewhere in the
+					same document). A simple link element can be
+					constructed by including a specific set of XLink
+					attributes. The XML Linking Language (XLink) is
+					currently a Proposed Recommendation of the World
+					Wide Web Consortium. XLink allows elements to be
+					inserted into XML documents so as to create
+					sophisticated links between resources; such links
+					can be used to reference remote properties. A simple
+					link element can be used to implement pointer
+					functionality, and this functionality has been built
+					into various GML 3 elements by including the
+					gml:AssociationAttributeGroup.
+				</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attributeGroup>
+	</xsd:complexType>
+	<xsd:element name="PointProperty" type="gml:PointPropertyType">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">
+				This property element either references a point via the
+				XLink-attributes or contains the point element.
+				pointProperty is the predefined property which can be
+				used by GML Application Schemas whenever a GML Feature
+				has a property with a value that is substitutable for
+				Point.
+			</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType name="PolygonType">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">
+				A Polygon is a special surface that is defined by a
+				single surface patch. The boundary of this patch is
+				coplanar and the polygon uses planar interpolation in
+				its interior. It is backwards compatible with the
+				Polygon of GML 2, GM_Polygon of ISO 19107 is implemented
+				by PolygonPatch.
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element ref="gml:MetaDataProperty" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element ref="gml:Description" minOccurs="0"/>
+			<!--<xsd:element ref="Name" minOccurs="0" maxOccurs="unbounded"/>-->
+			<xsd:element ref="gml:Exterior" minOccurs="0"/>
+			<xsd:element ref="gml:Interior" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+		<xsd:attribute name="id" type="xsd:ID" use="optional"/>
+		<xsd:attribute name="gid" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation xml:lang="en">
+					This attribute is included for backward
+					compatibility with GML 2 and is deprecated with GML
+					3. This identifer is superceded by "gml:id"
+					inherited from AbstractGMLType. The attribute "gid"
+					should not be used anymore and may be deleted in
+					future versions of GML without further notice.
+				</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attributeGroup ref="gml:SRSReferenceGroup"/>
+	</xsd:complexType>
+	<xsd:element name="Polygon" type="gml:PolygonType"/>
+</xsd:schema>

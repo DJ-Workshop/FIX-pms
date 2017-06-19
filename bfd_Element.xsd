@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            attributeFormDefault="unqualified"
+            elementFormDefault="qualified"
+            finalDefault="#all"
+            blockDefault="#all"
+            targetNamespace="http://naro.narc.fmd.go.jp/bfd/Element"
+            xmlns:bfdel="http://naro.narc.fmd.go.jp/bfd/Element"
+            >
+
+  <!--スキーマ情報-->
+  <xsd:annotation>
+    <xsd:appinfo>
+      Scheme Version 1.00
+    </xsd:appinfo>
+    <xsd:documentation>
+      共通で利用する経営指標項目の参照キー用のXMLスキーマ
+    </xsd:documentation>
+  </xsd:annotation>
+
+  <!--外部参照キーの要素宣言-->
+  <xsd:element name="MIndexID" type="xsd:string">
+    <xsd:annotation>
+      <xsd:documentation>
+        経営指標項目の参照キー
+        5桁：都道府県コード(2桁)+通し番号(3桁)
+        都道府県が特定できない場合は上2桁00
+      </xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+
+  <!--外部参照キーの要素宣言-->
+  <xsd:element name="MISourceID" type="xsd:string">
+    <xsd:annotation>
+      <xsd:documentation>
+        経営指標項目の元資料の参照キー
+        4桁：都道府県コード(2桁)+通し番号(2桁)
+        都道府県が特定できない場合は上2桁00
+      </xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+</xsd:schema>
